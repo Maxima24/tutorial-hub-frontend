@@ -22,7 +22,7 @@ export const Navbar  = ({title, icon: Icon, parent}: PageConfig) =>{
     },[])
 
     return(
-        <div className= {`top-0 z-10  sticky lg:px-8 px-2 py-6 shadow bg-white lg:flex hidden  ${isCollapsedDesktop ? "lg:ml-[70px]" : "lg:ml-[250px]"} ${scrolled?"bg-white/20 backdrop-blur-md shadow-md":"bg-white"}`}>
+        <div className= {`top-0 z-[1000]  sticky lg:px-8 px-2 py-6 shadow bg-white   ${isCollapsedDesktop ? "lg:ml-[70px]" : "lg:ml-[250px]"} ${scrolled?"bg-white/20 backdrop-blur-md shadow-md":"bg-white"}`}>
             
             <div className="flex items-center gap-2">
                 {currentPage.icon && <currentPage.icon className="w-6 h-6 text-blue-700 ml-2" />}
@@ -32,6 +32,7 @@ export const Navbar  = ({title, icon: Icon, parent}: PageConfig) =>{
                        {parentPage.title}
                       </Link>
                       <span className="text-gray-400"><ChevronRight/></span>
+                      {/*<span className="text-neutral-800 font-semibold lg:text-2xl text-xl">{currentPage.title}</span>*/}
                      </>
                 ): (
                                 <>

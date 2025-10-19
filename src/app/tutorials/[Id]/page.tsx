@@ -8,8 +8,8 @@ import { useParams, useRouter } from 'next/navigation';
 import { useSidebar } from '@/contexts/sideBarContext';
 
 export default function TutorialDetailPage() {
-  const { id } = useParams();
-  const tutorialId = Array.isArray(id) ? id[0] : id;
+  const { Id } = useParams();
+  const tutorialId = Array.isArray(Id) ? Id[0] : Id;
   const router = useRouter();
   const { searchedTutorial: tutorial, getTutorialById } = useTutorialsStore();
   const [isEnrolled, setIsEnrolled] = useState(false);

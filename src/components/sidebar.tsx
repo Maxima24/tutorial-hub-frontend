@@ -30,7 +30,7 @@ export const Sidebar = () => {
     <div
       className={`${
         isSidebarOpen ? "w-64" : "w-20"
-      } bg-white shadow transition-all duration-300 lg:flex flex-col fixed h-screen hidden z-50`}
+      } bg-white shadow transition-all duration-300 lg:flex flex-col fixed h-screen hidden z-[1100]`}
     >
       {/* Header Section */}
       <div className="p-6 flex items-center justify-between border-b border-gray-100">

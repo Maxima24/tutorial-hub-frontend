@@ -44,10 +44,9 @@ import {
   
   // ✅ Helper function to get page config safely
   export function getPageConfig(pathname: string): PageConfig {
-    // 1️⃣ Direct match
+    
     if (dashboardPageConfig[pathname]) return dashboardPageConfig[pathname];
   
-    // 2️⃣ Dynamic tutorials subpage
     if (pathname.startsWith("/tutorials/")) {
       const slug = pathname.split("/")[2]?.replace(/-/g, " "); // e.g. /tutorials/get-books → "get books"
       const formattedTitle = slug
@@ -61,7 +60,6 @@ import {
       };
     }
   
-    // 3️⃣ Default fallback
     return {
       title: "Dashboard",
       icon: Home,
