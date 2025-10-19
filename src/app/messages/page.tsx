@@ -1,15 +1,14 @@
 'use client'
 import React from 'react'
-import { Sidebar } from '@/components/SideBar';
 import { Search } from 'lucide-react';
 
 function page() {
     const [currentPage, setCurrentPage] = React.useState('messages');
   return (
      <div className="flex h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-         <Sidebar />
+         {/* <Sidebar /> */}
 
-         
+
      <div className="flex-1 overflow-auto">
                      {currentPage === 'messages' && (
           <div className="p-8 h-full">
