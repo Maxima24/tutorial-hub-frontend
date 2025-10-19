@@ -18,7 +18,7 @@ interface SideBarContextType {
 
 const SideBarContext = React.createContext<SideBarContextType | undefined>(undefined);
 
-// ✅ 2️⃣ Sidebar Component
+
 export default function SideBar({id}:{id:string}) {
  const router = useRouter()
    const [currentPage, setCurrentPage] = React.useState('');
@@ -40,7 +40,7 @@ export default function SideBar({id}:{id:string}) {
     setCurrentPage(id)
   },[id])
   return (
-   <div className={`${sidebarOpen ? 'w-64' : 'w-20'} bg-white shadow-2xl transition-all duration-300 flex flex-col relative`}>
+   <div className={`${sidebarOpen ? 'w-64' : 'w-20'} bg-white shadow-2xl transition-all duration-300 flex flex-col `}>
         <div className="p-6 flex items-center justify-between border-b border-gray-100">
           {sidebarOpen && <div className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-300 bg-clip-text text-transparent">LearnHub</div>}
           <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">

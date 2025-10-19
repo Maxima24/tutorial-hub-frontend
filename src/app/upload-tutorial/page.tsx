@@ -1,6 +1,7 @@
 'use client'
 import SideBar from '@/components/sideBar';
-import { ChevronRight,CheckCircle,Video,ImageC,DollarSign,Send } from 'lucide-react';
+import { useSidebar } from '@/contexts/sideBarContext';
+import { ChevronRight,CheckCircle,Video,DollarSign,Send, ImageIcon } from 'lucide-react';
 import Image from 'next/image';
 import React from 'react'
 ChevronRight
@@ -8,11 +9,13 @@ function Page() {
      const [currentPage, setCurrentPage] = React.useState('dashboard');
      const [uploadStep,setUploadStep] = React.useState(1)
      const [uploadData,setUploadData] = React.useState<Record<string,string>>({})
+     const {isCollapsedDesktop} = useSidebar();
+
+
   return (
-      <div className="flex h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-            <SideBar id={"upload-tutorial"} />
-              <div className="flex-1 overflow-auto">
-                      <div className="p-8">
+      <div className={`flex flex-col min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50  ${isCollapsedDesktop ? "lg:ml-[70px]" : "lg:ml-[250px]"}`}>
+        <div className="flex-1 overflow-auto">
+          <div className="p-8">
       {/* Header */}
       <div className="mb-8">
         <button
@@ -178,7 +181,7 @@ function Page() {
                   Thumbnail Image *
                 </label>
                 <div className="border-2 border-dashed border-gray-300 rounded-xl p-12 text-center hover:border-blue-500 transition-colors cursor-pointer bg-gray-50">
-                  <Image className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <ImageIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                   <p className="text-gray-900 font-medium mb-2">
                     Upload a thumbnail image
                   </p>

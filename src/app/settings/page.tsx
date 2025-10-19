@@ -1,25 +1,28 @@
 "use client"
 import SideBar from '@/components/sideBar'
+import { useSidebar } from '@/contexts/sideBarContext';
 import React from 'react'
+
+
 function page() {
-     const [currentPage, setCurrentPage] = React.useState('settings');
+  const [currentPage, setCurrentPage] = React.useState('settings');
+  const {isCollapsedDesktop} = useSidebar();
     
   return (
-     <div className="flex h-fit bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-           <SideBar id={"settings"} />
- <div className="flex-1 overflow-auto"></div>
+     <div className={`flex flex-col min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50  ${isCollapsedDesktop ? "lg:ml-[70px]" : "lg:ml-[250px]"}`}>
+        <div className=" "></div>
             {currentPage === 'settings' && (
           <div className="p-8">
             {/* Header */}
             <div className="mb-8">
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">Settings</h1>
+              <h1 className="md:text-3xl text-2xl font-bold text-gray-900 mb-2">Profile Settings</h1>
               <p className="text-gray-600">Manage your account and preferences</p>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Settings Navigation */}
               <div className="lg:col-span-1">
-                <div className="bg-white rounded-2xl shadow-lg p-4 space-y-2 sticky top-8">
+                <div className="bg-white rounded-2xl shadow p-4 space-y-2 sticky top-8">
                   {['Profile', 'Account', 'Notifications', 'Privacy', 'Appearance', 'Language'].map((item, idx) => (
                     <button
                       key={idx}
@@ -38,7 +41,7 @@ function page() {
               {/* Settings Content */}
               <div className="lg:col-span-2 space-y-6">
                 {/* Profile Settings */}
-                <div className="bg-white rounded-2xl shadow-lg p-6">
+                <div className="bg-white rounded-2xl shadow p-6">
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Profile Information</h2>
                   
                   {/* Avatar Upload */}
@@ -85,7 +88,6 @@ function page() {
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Bio</label>
                       <textarea
-                        rows="4"
                         defaultValue="Passionate instructor helping students achieve their goals."
                         className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:outline-none transition-colors"
                       />

@@ -4,24 +4,27 @@ import { Home, BookOpen, Settings, MessageCircle, Bell, Menu, X, Play, Clock, Tr
 import SideBar from '@/components/sideBar';
 import useVideosStore from '@/store/videos-store';
 import {useRouter }from 'next/navigation';
+import { useSidebar } from '@/contexts/sideBarContext';
 
 
 function Page() {
   const router= useRouter()
+  const {isCollapsedDesktop} = useSidebar();
   const {videos,searchQuery,setSearchQuery,filteredVideos}= useVideosStore()
-     const [currentPage, setCurrentPage] = React.useState('tutorials');
-     const displayedVideos = searchQuery?filteredVideos:videos
+  const [currentPage, setCurrentPage] = React.useState('tutorials');
+  const displayedVideos = searchQuery?filteredVideos:videos
+
   return (
-    <div className='flex h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50'>
-          <SideBar id={"tutorials"} />
-             <div className="flex-1 overflow-auto">
+    <div className={`flex flex-col min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50  ${isCollapsedDesktop ? "lg:ml-[70px]" : "lg:ml-[250px]"}`}>
+
+       <div className="flex-1 overflow-auto">
                   {/** main content */}
           {currentPage === 'tutorials' && (
           <div className="p-8">
             {/* Header */}
             <div className="mb-8">
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">Explore Tutorials</h1>
-              <p className="text-gray-600">Master new skills with expert-led courses</p>
+              <h1 className="md:text-3xl text-2xl font-bold text-gray-900 mb-2">Explore Tutorials</h1>
+              <p className="text-gray-600 text-[18px]">Master new skills with expert-led courses</p>
             </div>
 
             {/* Search & Filter */}
@@ -36,7 +39,7 @@ function Page() {
                   className="w-full text-black pl-12 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:outline-none transition-colors"
                 />
               </div>
-              <button className="px-6 py-3 bg-white border-2 border-gray-200 rounded-xl hover:border-blue-500 transition-colors flex items-center gap-2 font-medium">
+              <button className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-blue-500/30 border-2 border-gray-200 rounded-xl  transition-colors flex items-center gap-2 font-medium cursor-pointer">
                 <Filter size={20} />
                 Filter
               </button>
@@ -47,7 +50,7 @@ function Page() {
               {displayedVideos.map((tutorial) => (
                 <div
                   key={tutorial.id}
-                  className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 cursor-pointer group"
+                  className="flex flex-col justify-between bg-white rounded-2xl shadow overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 cursor-pointer group"
                 >
                   <div className={`h-48 ${tutorial.thumbnail} relative flex items-center justify-center`}>
                     <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -74,7 +77,7 @@ function Page() {
                     </div>
                     <div className="flex items-center justify-between pt-4 border-t border-gray-100">
                       <span className="text-sm text-gray-600">{tutorial.students} students</span>
-                      <button className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg font-medium hover:shadow-lg transition-all" onClick={()=>router.push(`/tutorials/${tutorial.id}`)
+                      <button className="px-4 py-2 bg-gradient-to-r from-blue-600 via-blue-500 to-blue-700 text-white rounded-lg font-medium hover:shadow-lg transition-all cursor-pointer" onClick={()=>router.push(`/tutorials/${tutorial.id}`)
                         }>
                         Start
                       </button>
@@ -85,7 +88,7 @@ function Page() {
             </div>
           </div>
         )}
-             </div>
+        </div>
 
 
       
