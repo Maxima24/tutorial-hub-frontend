@@ -3,7 +3,6 @@
 import React from 'react'
 import { ArrowLeft, ChevronLeft, Search, Send } from 'lucide-react';
 import { useSidebar } from '@/contexts/sideBarContext';
-import { Navbar } from '@/components/navbar';
 
 function page() {
     const {isCollapsedDesktop} = useSidebar()

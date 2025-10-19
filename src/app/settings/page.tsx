@@ -1,5 +1,4 @@
 "use client"
-import SideBar from '@/components/sideBar'
 import { useSidebar } from '@/contexts/sideBarContext';
 import React from 'react'
 
