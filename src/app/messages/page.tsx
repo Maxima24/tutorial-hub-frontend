@@ -2,7 +2,7 @@
 import React from 'react'
 import { Search } from 'lucide-react';
 
-import { Sidebar } from '@/components/sideBar';
+import { Sidebar } from '@/components/sidebar';
 function page() {
     const [currentPage, setCurrentPage] = React.useState('messages');
   return (

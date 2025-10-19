@@ -1,7 +1,7 @@
 "use client"
 import { useSidebar } from '@/contexts/sideBarContext';
 import React from 'react'
-import { Sidebar } from '@/components/sideBar';
+import { Sidebar } from '@/components/sidebar';
 
 function page() {
   const [currentPage, setCurrentPage] = React.useState('settings');

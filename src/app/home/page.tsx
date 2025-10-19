@@ -2,7 +2,7 @@
 import React from 'react';
 import { Home, BookOpen, Settings, MessageCircle, Bell, Menu, X, Play, Clock, TrendingUp, Award, ChevronRight } from 'lucide-react';
 import { useSidebar } from '@/contexts/sideBarContext';
-import { Sidebar } from '@/components/sideBar';
+import { Sidebar } from '@/components/sidebar';
 
 export default function LearningPlatform() {
   const [currentPage, setCurrentPage] = React.useState('dashboard'); 
