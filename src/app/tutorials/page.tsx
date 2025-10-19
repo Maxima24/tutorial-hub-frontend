@@ -2,71 +2,13 @@
 import React from 'react'
 import { Home, BookOpen, Settings, MessageCircle, Bell, Menu, X, Play, Clock, TrendingUp, Award, ChevronRight, Search, Filter, Star } from 'lucide-react';
 import SideBar from '@/components/sideBar';
+import useVideosStore from '@/store/videos-store';
 
-const tutorials = [ 
-   {
-     id: 1,
-     title: 'Getting Started with React Hooks',
-     category: 'React',
-     duration: '45 min',
-     difficulty: 'Beginner',
-     rating: 4.8,
-     thumbnail: 'bg-gradient-to-br from-blue-400 to-blue-600',
-     students: '2.3k'
-   },
-   {
-     id: 2,
-     title: 'Mastering Tailwind CSS',
-     category: 'CSS',
-     duration: '1h 20m',
-     difficulty: 'Intermediate',
-     rating: 4.9,
-     thumbnail: 'bg-gradient-to-br from-cyan-400 to-teal-600',
-     students: '1.8k'
-   },
-   {
-     id: 3,
-     title: 'Node.js API Development',
-     category: 'Backend',
-     duration: '2h 15m',
-     difficulty: 'Advanced',
-     rating: 4.7,
-     thumbnail: 'bg-gradient-to-br from-green-400 to-emerald-600',
-     students: '1.5k'
-   },
-   {
-     id: 4,
-     title: 'TypeScript Fundamentals',
-     category: 'JavaScript',
-     duration: '1h 30m',
-     difficulty: 'Beginner',
-     rating: 4.9,
-     thumbnail: 'bg-gradient-to-br from-purple-400 to-indigo-600',
-     students: '3.1k'
-   },
-   {
-     id: 5,
-     title: 'Modern Web Animation',
-     category: 'Design',
-     duration: '55 min',
-     difficulty: 'Intermediate',
-     rating: 4.6,
-     thumbnail: 'bg-gradient-to-br from-pink-400 to-rose-600',
-     students: '980'
-   },
-   {
-     id: 6,
-     title: 'GraphQL Complete Guide',
-     category: 'Backend',
-     duration: '2h 40m',
-     difficulty: 'Advanced',
-     rating: 4.8,
-     thumbnail: 'bg-gradient-to-br from-orange-400 to-amber-600',
-     students: '1.2k'
-   }
- ];
+
 function Page() {
+  const {videos,searchQuery,setSearchQuery,filteredVideos}= useVideosStore()
      const [currentPage, setCurrentPage] = React.useState('tutorials');
+     const displayedVideos = searchQuery?filteredVideos:videos
   return (
     <div className='flex h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50'>
           <SideBar id={"tutorials"} />
@@ -87,7 +29,9 @@ function Page() {
                 <input
                   type="text"
                   placeholder="Search tutorials..."
-                  className="w-full pl-12 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:outline-none transition-colors"
+                  value={searchQuery}
+                  onChange={(e)=> setSearchQuery(e.target.value)}
+                  className="w-full text-black pl-12 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:outline-none transition-colors"
                 />
               </div>
               <button className="px-6 py-3 bg-white border-2 border-gray-200 rounded-xl hover:border-blue-500 transition-colors flex items-center gap-2 font-medium">
@@ -98,7 +42,7 @@ function Page() {
 
             {/* Tutorials Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {tutorials.map((tutorial) => (
+              {displayedVideos.map((tutorial) => (
                 <div
                   key={tutorial.id}
                   className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 cursor-pointer group"
