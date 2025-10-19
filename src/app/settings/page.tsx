@@ -1,7 +1,7 @@
 "use client"
 import { useSidebar } from '@/contexts/sideBarContext';
 import React from 'react'
-
+import { Sidebar } from '@/components/sideBar';
 
 function page() {
   const [currentPage, setCurrentPage] = React.useState('settings');
@@ -9,6 +9,7 @@ function page() {
     
   return (
      <div className={`flex flex-col min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50  ${isCollapsedDesktop ? "lg:ml-[70px]" : "lg:ml-[250px]"}`}>
+      <Sidebar/>
         <div className=" "></div>
             {currentPage === 'settings' && (
           <div className="p-8">

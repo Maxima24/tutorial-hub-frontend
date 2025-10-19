@@ -2,6 +2,7 @@
 import React from 'react';
 import { Home, BookOpen, Settings, MessageCircle, Bell, Menu, X, Play, Clock, TrendingUp, Award, ChevronRight } from 'lucide-react';
 import { useSidebar } from '@/contexts/sideBarContext';
+import { Sidebar } from '@/components/sideBar';
 
 export default function LearningPlatform() {
   const [currentPage, setCurrentPage] = React.useState('dashboard'); 
@@ -21,6 +22,7 @@ export default function LearningPlatform() {
 
   return (
     <div className={`flex flex-col min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50  ${isCollapsedDesktop ? "lg:ml-[70px]" : "lg:ml-[250px]"}`}>
+      <Sidebar/>
       <div className="flex-1 overflow-auto">
         {currentPage === 'dashboard' && (
           <div className="lg:p-8 p-4">
