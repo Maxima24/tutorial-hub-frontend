@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { 
   ArrowLeft, Play, Clock, Users, Star, BarChart, Award, CheckCircle, Lock, Heart, Share2, Download, MessageCircle, ThumbsUp, ChevronDown, ChevronUp, Calendar, Video, FileText, Code 
 } from 'lucide-react';
-import SideBar from '@/components/sideBar';
 import useTutorialsStore from '@/store/tutorial-store';
 import { useParams, useRouter } from 'next/navigation';
 import { useSidebar } from '@/contexts/sideBarContext';

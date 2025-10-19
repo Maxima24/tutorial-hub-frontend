@@ -1,7 +1,6 @@
 'use client'
 import React from 'react'
 import { Home, BookOpen, Settings, MessageCircle, Bell, Menu, X, Play, Clock, TrendingUp, Award, ChevronRight, Search, Filter, Star } from 'lucide-react';
-import SideBar from '@/components/sideBar';
 import useVideosStore from '@/store/videos-store';
 import {useRouter }from 'next/navigation';
 import { useSidebar } from '@/contexts/sideBarContext';

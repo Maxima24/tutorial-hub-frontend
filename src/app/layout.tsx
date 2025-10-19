@@ -28,7 +28,7 @@ export default function RootLayout({
     <html lang="en">
       <SidebarProvider>
       <body >
-        <div className="flex w-full">
+        <div className="flex w-full ">
           <Sidebar/>
           {/**main content */}
           <div  className="w-full flex-1 flex flex-col ">
