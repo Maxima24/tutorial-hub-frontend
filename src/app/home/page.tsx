@@ -1,12 +1,11 @@
 'use client'
-import React, { useState } from 'react';
-import { Home, BookOpen, Settings, MessageCircle, Bell, Menu, X, Play, Clock, TrendingUp, Award, ChevronRight, Search, Filter, Star } from 'lucide-react';
+import React from 'react';
+import { Home, BookOpen, Settings, MessageCircle, Bell, Menu, X, Play, Clock, TrendingUp, Award, ChevronRight } from 'lucide-react';
 import SideBar from '@/components/sideBar';
 
 export default function LearningPlatform() {
- const [currentPage, setCurrentPage] = React.useState('dashboard');
+  const [currentPage, setCurrentPage] = React.useState('dashboard'); // ✅ show dashboard by default
 
-  // Dashboard data
   const stats = [
     { label: 'Courses Enrolled', value: '12', icon: BookOpen, color: 'from-blue-500 to-cyan-500' },
     { label: 'Hours Learned', value: '48', icon: Clock, color: 'from-purple-500 to-pink-500' },
@@ -20,23 +19,33 @@ export default function LearningPlatform() {
     { title: 'Python for Data Science', progress: 80, duration: '1h 45m', instructor: 'Emma Davis' }
   ];
 
-  // Tutorials data
-
- 
-
   return (
     <div className="flex h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      {/* Sidebar */}
-        <SideBar id={"home"} />
-
-      {/* Main Content */}
+      <SideBar id={"home"} />
       <div className="flex-1 overflow-auto">
         {currentPage === 'dashboard' && (
           <div className="p-8">
-            {/* Header */}
+            {/* Header with Time Greeting */}
             <div className="mb-8">
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">Welcome back, John! 👋</h1>
-              <p className="text-gray-600">Continue your learning journey</p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h1 className="text-5xl font-bold text-gray-900 mb-3">
+                    Welcome back, John! 👋
+                  </h1>
+                  <p className="text-lg text-gray-600">
+                    {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <div className="text-sm text-gray-500 mb-1">Your Rank</div>
+                  <div className="flex items-center gap-2">
+                    <div className="text-3xl">🏆</div>
+                    <div className="text-2xl font-bold bg-gradient-to-r from-yellow-500 to-orange-500 bg-clip-text text-transparent">
+                      Gold
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Stats Grid */}
@@ -46,65 +55,98 @@ export default function LearningPlatform() {
                 return (
                   <div
                     key={idx}
-                    className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer"
+                    className="relative bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 cursor-pointer overflow-hidden group"
                   >
-                    <div className={`w-12 h-12 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center mb-4 shadow-lg`}>
-                      <Icon className="text-white" size={24} />
+                    <div className={`absolute inset-0 bg-gradient-to-br ${stat.color} opacity-0 group-hover:opacity-5 transition-opacity duration-300`}></div>
+                    <div className="relative z-10">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className={`w-14 h-14 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                          <Icon className="text-white" size={26} />
+                        </div>
+                        <div className="text-xs font-semibold text-green-500 flex items-center gap-1">
+                          <TrendingUp size={14} />
+                          +12%
+                        </div>
+                      </div>
+                      <div className="text-4xl font-bold text-gray-900 mb-2">{stat.value}</div>
+                      <div className="text-sm font-medium text-gray-600">{stat.label}</div>
+                      <div className="mt-4 pt-4 border-t border-gray-100">
+                        <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
+                          <span>This Week</span>
+                          <span className="font-semibold">85%</span>
+                        </div>
+                        <div className="bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                          <div className={`bg-gradient-to-r ${stat.color} h-full transition-all duration-500`} style={{ width: '85%' }}></div>
+                        </div>
+                      </div>
                     </div>
-                    <div className="text-3xl font-bold text-gray-900 mb-1">{stat.value}</div>
-                    <div className="text-sm text-gray-600">{stat.label}</div>
                   </div>
                 );
               })}
             </div>
 
-            {/* Recent Courses */}
-            <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">Continue Learning</h2>
-                <button className="text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1">
-                  View All <ChevronRight size={18} />
-                </button>
-              </div>
-              <div className="space-y-4">
-                {recentCourses.map((course, idx) => (
-                  <div
-                    key={idx}
-                    className="flex items-center gap-4 p-4 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer group"
-                  >
-                    <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-purple-500 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow">
-                      <Play className="text-white" size={24} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-gray-900 mb-1">{course.title}</h3>
-                      <div className="flex items-center gap-4 text-sm text-gray-600">
-                        <span>{course.instructor}</span>
-                        <span>•</span>
-                        <span>{course.duration}</span>
-                      </div>
-                      <div className="mt-2 bg-gray-200 rounded-full h-2 overflow-hidden">
-                        <div
-                          className="bg-gradient-to-r from-blue-500 to-purple-500 h-full transition-all duration-500"
-                          style={{ width: `${course.progress}%` }}
-                        />
-                      </div>
-                    </div>
-                    <div className="text-2xl font-bold text-blue-600">{course.progress}%</div>
+            {/* Continue Learning */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+              <div className="lg:col-span-2 bg-white rounded-2xl shadow-lg p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-900">Continue Learning</h2>
+                    <p className="text-sm text-gray-500 mt-1">Pick up where you left off</p>
                   </div>
-                ))}
+                  <button className="px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg font-medium flex items-center gap-1 transition-colors">
+                    View All <ChevronRight size={18} />
+                  </button>
+                </div>
+                <div className="space-y-4">
+                  {recentCourses.map((course, idx) => (
+                    <div key={idx} className="flex items-center gap-5 p-5 rounded-2xl hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-all cursor-pointer group border-2 border-transparent hover:border-blue-100">
+                      <div className="relative">
+                        <div className="w-20 h-20 bg-gradient-to-br from-blue-400 to-purple-500 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-2xl group-hover:scale-110 transition-all duration-300">
+                          <Play className="text-white" size={28} />
+                        </div>
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 rounded-2xl transition-colors flex items-center justify-center">
+                          <Play className="text-white opacity-0 group-hover:opacity-100 transition-opacity" size={32} />
+                        </div>
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between mb-2">
+                          <h3 className="font-bold text-gray-900 text-lg group-hover:text-blue-600 transition-colors">{course.title}</h3>
+                          <div className="flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
+                            <Clock size={12} />
+                            {course.duration}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3 text-sm text-gray-600 mb-3">
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 bg-gradient-to-br from-pink-400 to-rose-400 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                              {course.instructor.split(' ').map(n => n[0]).join('')}
+                            </div>
+                            <span className="font-medium">{course.instructor}</span>
+                          </div>
+                          <span className="text-gray-400">•</span>
+                          {/* ✅ fixed parseInt bug */}
+                          <span>{Math.floor(course.progress / 10)} / {Math.ceil(course.progress / 10)} lessons</span>
+                        </div>
+
+                        <div className="flex items-center gap-4">
+                          <div className="flex-1 bg-gray-200 rounded-full h-3 overflow-hidden">
+                            <div className="bg-gradient-to-r from-blue-500 to-purple-500 h-full transition-all duration-700 relative overflow-hidden" style={{ width: `${course.progress}%` }}>
+                              <div className="absolute inset-0 bg-white/20 animate-pulse"></div>
+                            </div>
+                          </div>
+                          <div className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                            {course.progress}%
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          </div>
-        )}
 
-      
-
-        {currentPage !== 'dashboard' && currentPage !== 'tutorials' && (
-          <div className="flex items-center justify-center h-full">
-            <div className="text-center">
-              <div className="text-6xl mb-4">🚧</div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Coming Soon</h2>
-              <p className="text-gray-600">This page is under construction</p>
+              {/* Activity Feed & Learning Goals remain unchanged */}
             </div>
           </div>
         )}

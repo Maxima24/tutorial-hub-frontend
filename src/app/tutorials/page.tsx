@@ -3,9 +3,11 @@ import React from 'react'
 import { Home, BookOpen, Settings, MessageCircle, Bell, Menu, X, Play, Clock, TrendingUp, Award, ChevronRight, Search, Filter, Star } from 'lucide-react';
 import SideBar from '@/components/sideBar';
 import useVideosStore from '@/store/videos-store';
+import {useRouter }from 'next/navigation';
 
 
 function Page() {
+  const router= useRouter()
   const {videos,searchQuery,setSearchQuery,filteredVideos}= useVideosStore()
      const [currentPage, setCurrentPage] = React.useState('tutorials');
      const displayedVideos = searchQuery?filteredVideos:videos
@@ -72,7 +74,8 @@ function Page() {
                     </div>
                     <div className="flex items-center justify-between pt-4 border-t border-gray-100">
                       <span className="text-sm text-gray-600">{tutorial.students} students</span>
-                      <button className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg font-medium hover:shadow-lg transition-all">
+                      <button className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg font-medium hover:shadow-lg transition-all" onClick={()=>router.push(`/tutorials/${tutorial.id}`)
+                        }>
                         Start
                       </button>
                     </div>
