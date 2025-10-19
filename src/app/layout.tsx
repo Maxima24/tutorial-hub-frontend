@@ -1,13 +1,11 @@
 "use client"
 import type { Metadata } from "next";
 import "./globals.css";
-import { Sidebar } from "@/components/sidebar";
 import { SidebarProvider } from "@/contexts/sideBarContext";
 import { usePathname } from "next/navigation";
 import { getPageConfig } from "@/lib/config/dashboard-config";
-import { Navbar } from "@/components/navbar";
+import {Navbar} from "@/components/navbar";
 
-//import SideBar from "@/components/sideBar";
 
 
 //export const metadata: Metadata = {
@@ -29,7 +27,7 @@ export default function RootLayout({
       <SidebarProvider>
       <body >
         <div className="flex w-full ">
-          <Sidebar/>
+          {/* <Sidebar/> */}
           {/**main content */}
           <div  className="w-full flex-1 flex flex-col ">
             <Navbar

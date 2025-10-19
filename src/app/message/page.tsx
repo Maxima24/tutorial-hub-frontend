@@ -3,13 +3,14 @@
 import React from 'react'
 import { ArrowLeft, ChevronLeft, Search, Send } from 'lucide-react';
 import { useSidebar } from '@/contexts/sideBarContext';
-import { Navbar } from '@/components/navbar';
+import { Sidebar } from '@/components/sidebar';
 
 function page() {
     const {isCollapsedDesktop} = useSidebar()
   return (
      <div className = {`flex flex-col min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50  ${isCollapsedDesktop ? "lg:ml-[70px]" : "lg:ml-[250px]"}`}>
-     <div className=" ">
+      <Sidebar/>
+     <div className="flex-1 overflow-auto ">
           <div className="lg:p-8 sm:p-3 h-full ">
             <div className="flex gap-4  w-full items-stretch ">
               {/* Conversations List */}
