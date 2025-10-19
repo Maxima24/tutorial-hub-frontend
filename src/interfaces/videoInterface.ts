@@ -1,3 +1,5 @@
+import { Tutorial } from "./tutorialInterface";
+
 export interface Video {
   id: number;
   title: string;
@@ -16,6 +18,6 @@ export interface VideoStore{
     setSearchQuery:(query:string)=> void
     searchQuery:string,
     filteredVideos:Video[]
-
+    
 
 }

@@ -1,125 +1,30 @@
 'use client'
-import React, { useState } from 'react';
-import { ArrowLeft, Play, Clock, Users, Star, BarChart, Award, CheckCircle, Lock, Heart, Share2, Download, MessageCircle, ThumbsUp, ChevronDown, ChevronUp, Calendar, Video, FileText, Code } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { 
+  ArrowLeft, Play, Clock, Users, Star, BarChart, Award, CheckCircle, Lock, Heart, Share2, Download, MessageCircle, ThumbsUp, ChevronDown, ChevronUp, Calendar, Video, FileText, Code 
+} from 'lucide-react';
 import SideBar from '@/components/sideBar';
+import useTutorialsStore from '@/store/tutorial-store';
+import { useParams, useRouter } from 'next/navigation';
 
 export default function TutorialDetailPage() {
+  const { id } = useParams();
+  const tutorialId = Array.isArray(id) ? id[0] : id;
+  const router = useRouter();
+  const { searchedTutorial: tutorial, getTutorialById } = useTutorialsStore();
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   const [expandedModule, setExpandedModule] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
 
-  const tutorial = {
-    id: 1,
-    title: 'Complete React Hooks Masterclass 2024',
-    instructor: {
-      name: 'Sarah Johnson',
-      avatar: 'SJ',
-      title: 'Senior React Developer',
-      students: '50k+',
-      rating: 4.9,
-      courses: 12
-    },
-    thumbnail: 'bg-gradient-to-br from-blue-400 to-blue-600',
-    category: 'React',
-    duration: '12h 45m',
-    difficulty: 'Intermediate',
-    rating: 4.8,
-    reviews: 2847,
-    students: 12453,
-    price: 49.99,
-    originalPrice: 99.99,
-    language: 'English',
-    lastUpdated: 'October 2024',
-    description: 'Master React Hooks from basics to advanced concepts. Build real-world projects and become a proficient React developer with hands-on experience in modern React development patterns.',
-    whatYouLearn: [
-      'Master all React Hooks including useState, useEffect, useContext, and custom hooks',
-      'Build 5 real-world projects from scratch',
-      'Understand advanced patterns and best practices',
-      'Performance optimization techniques',
-      'Testing React components with Jest and React Testing Library',
-      'State management with Context API and useReducer'
-    ],
-    requirements: [
-      'Basic JavaScript knowledge',
-      'Understanding of ES6+ features',
-      'Familiarity with HTML and CSS',
-      'Node.js installed on your computer'
-    ],
-    curriculum: [
-      {
-        title: 'Getting Started with React Hooks',
-        duration: '2h 15m',
-        lessons: [
-          { title: 'Introduction to React Hooks', duration: '12:30', type: 'video', preview: true },
-          { title: 'Setting Up Your Development Environment', duration: '15:45', type: 'video', preview: true },
-          { title: 'Your First Hook - useState', duration: '20:15', type: 'video', preview: false },
-          { title: 'Practice Exercise: Counter App', duration: '18:30', type: 'exercise', preview: false },
-          { title: 'Quiz: useState Basics', duration: '10:00', type: 'quiz', preview: false }
-        ]
-      },
-      {
-        title: 'Deep Dive into useEffect',
-        duration: '3h 30m',
-        lessons: [
-          { title: 'Understanding Side Effects', duration: '25:40', type: 'video', preview: false },
-          { title: 'Cleanup Functions', duration: '18:20', type: 'video', preview: false },
-          { title: 'Dependencies Array Explained', duration: '22:15', type: 'video', preview: false },
-          { title: 'Common Pitfalls and Solutions', duration: '28:30', type: 'video', preview: false },
-          { title: 'Project: Data Fetching App', duration: '45:00', type: 'project', preview: false }
-        ]
-      },
-      {
-        title: 'Advanced Hooks & Custom Hooks',
-        duration: '4h 20m',
-        lessons: [
-          { title: 'useContext for State Management', duration: '30:15', type: 'video', preview: false },
-          { title: 'useReducer - Redux Alternative', duration: '35:40', type: 'video', preview: false },
-          { title: 'Creating Custom Hooks', duration: '40:20', type: 'video', preview: false },
-          { title: 'useMemo and useCallback', duration: '28:45', type: 'video', preview: false },
-          { title: 'Project: E-commerce Cart System', duration: '65:00', type: 'project', preview: false }
-        ]
-      },
-      {
-        title: 'Real-World Projects',
-        duration: '2h 40m',
-        lessons: [
-          { title: 'Project 1: Weather Dashboard', duration: '50:00', type: 'project', preview: false },
-          { title: 'Project 2: Task Manager', duration: '55:00', type: 'project', preview: false },
-          { title: 'Project 3: Social Media Feed', duration: '55:00', type: 'project', preview: false }
-        ]
-      }
-    ],
-    reviews: [
-      {
-        name: 'Mike Chen',
-        avatar: 'MC',
-        rating: 5,
-        date: '2 weeks ago',
-        comment: 'Absolutely fantastic course! Sarah explains everything so clearly and the projects are super practical. I feel confident using React Hooks in my work now.',
-        helpful: 234
-      },
-      {
-        name: 'Emma Davis',
-        avatar: 'ED',
-        rating: 5,
-        date: '1 month ago',
-        comment: 'Best React course I have taken. The custom hooks section was particularly valuable. Highly recommend!',
-        helpful: 189
-      },
-      {
-        name: 'Alex Rivera',
-        avatar: 'AR',
-        rating: 4,
-        date: '1 month ago',
-        comment: 'Great content and well-structured. Would love to see more advanced performance optimization topics.',
-        helpful: 145
-      }
-    ]
-  };
+  useEffect(() => {
+    if (tutorialId) {
+      getTutorialById(tutorialId);
+    }
+  }, [tutorialId]);
 
-  const getTypeIcon = (type) => {
-    switch(type) {
+  const getTypeIcon = (type: string) => {
+    switch (type) {
       case 'video': return <Video size={16} />;
       case 'exercise': return <Code size={16} />;
       case 'quiz': return <FileText size={16} />;
@@ -130,154 +35,157 @@ export default function TutorialDetailPage() {
 
   return (
     <div className="flex h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-        <SideBar id={`tutorial-ind`}/>
-        <div className="flex-1 overflow-auto">
-                  <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      {/* Hero Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-        <div className="max-w-7xl mx-auto px-8 py-12">
-          <button className="flex items-center gap-2 text-white/80 hover:text-white mb-6 transition-colors">
-            <ArrowLeft size={20} />
-            Back to Tutorials
-          </button>
+      <SideBar id={`tutorial-ind`} />
+      <div className="flex-1 overflow-auto">
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+          
+          {/* Hero Section */}
+          <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+            <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12">
+              <button 
+                className="flex items-center gap-2 text-white/80 hover:text-white mb-8 transition-colors" 
+                onClick={() => router.back()}
+              >
+                <ArrowLeft size={20} />
+                Back to Tutorials
+              </button>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Left Content */}
-            <div className="lg:col-span-2">
-              <div className="flex items-center gap-3 mb-4">
-                <span className="px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-sm font-semibold">
-                  {tutorial.category}
-                </span>
-                <span className="px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-sm font-semibold">
-                  {tutorial.difficulty}
-                </span>
-                <span className="px-3 py-1 bg-yellow-400/90 text-yellow-900 rounded-full text-sm font-semibold">
-                  Bestseller
-                </span>
-              </div>
-
-              <h1 className="text-4xl md:text-5xl font-bold mb-4">{tutorial.title}</h1>
-              <p className="text-xl text-blue-100 mb-6">{tutorial.description}</p>
-
-              <div className="flex flex-wrap items-center gap-6 mb-6">
-                <div className="flex items-center gap-2">
-                  <Star className="fill-yellow-400 text-yellow-400" size={20} />
-                  <span className="font-bold text-lg">{tutorial.rating}</span>
-                  <span className="text-blue-100">({tutorial.reviews.toLocaleString()} reviews)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Users size={20} />
-                  <span>{tutorial.students.toLocaleString()} students</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Clock size={20} />
-                  <span>{tutorial.duration}</span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-pink-400 to-rose-400 rounded-full flex items-center justify-center text-white font-bold">
-                    {tutorial.instructor.avatar}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Left Content */}
+                <div className="lg:col-span-2 flex flex-col gap-6">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <span className="px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-sm font-semibold">
+                      {tutorial?.category}
+                    </span>
+                    <span className="px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-sm font-semibold">
+                      {tutorial?.difficulty}
+                    </span>
+                    <span className="px-3 py-1 bg-yellow-400/90 text-yellow-900 rounded-full text-sm font-semibold">
+                      Bestseller
+                    </span>
                   </div>
-                  <div>
-                    <div className="font-semibold">Created by {tutorial.instructor.name}</div>
-                    <div className="text-sm text-blue-100">{tutorial.instructor.title}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
 
-            {/* Right Card - Preview/Enrollment */}
-            <div className="lg:col-span-1">
-              <div className="bg-white rounded-2xl shadow-2xl overflow-hidden sticky top-8">
-                <div className={`${tutorial.thumbnail} h-48 flex items-center justify-center relative group cursor-pointer`}>
-                  <div className="w-16 h-16 bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <Play className="text-white ml-1" size={32} />
-                  </div>
-                  <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm">
-                    Preview
-                  </div>
-                </div>
+                  <h1 className="text-4xl md:text-5xl font-bold">{tutorial?.title}</h1>
+                  <p className="text-xl text-blue-100">{tutorial?.description}</p>
 
-                <div className="p-6">
-                  <div className="flex items-baseline gap-3 mb-6">
-                    <div className="text-4xl font-bold text-gray-900">${tutorial.price}</div>
-                    <div className="text-xl text-gray-400 line-through">${tutorial.originalPrice}</div>
-                    <div className="px-2 py-1 bg-green-100 text-green-700 rounded text-sm font-semibold">
-                      50% OFF
+                  <div className="flex flex-wrap items-center gap-6">
+                    <div className="flex items-center gap-2">
+                      <Star className="fill-yellow-400 text-yellow-400" size={20} />
+                      <span className="font-bold text-lg">{tutorial?.rating}</span>
+                      <span className="text-blue-100">{tutorial?.reviews.length}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Users size={20} />
+                      <span>{tutorial?.students} students</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Clock size={20} />
+                      <span>{tutorial?.duration}</span>
                     </div>
                   </div>
 
-                  {!isEnrolled ? (
-                    <>
-                      <button
-                        onClick={() => setIsEnrolled(true)}
-                        className="w-full px-6 py-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl font-bold text-lg hover:shadow-xl transition-all mb-3"
-                      >
-                        Enroll Now
-                      </button>
-                      <button className="w-full px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:border-gray-400 transition-colors mb-4">
-                        Add to Cart
-                      </button>
-                    </>
-                  ) : (
-                    <button className="w-full px-6 py-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl font-bold text-lg hover:shadow-xl transition-all mb-4 flex items-center justify-center gap-2">
-                      <CheckCircle size={24} />
-                      Enrolled - Start Learning
-                    </button>
-                  )}
-
-                  <div className="text-center text-sm text-gray-500 mb-4">
-                    30-Day Money-Back Guarantee
-                  </div>
-
-                  <div className="border-t border-gray-200 pt-4 space-y-3">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-600">This course includes:</span>
+                  <div className="flex items-center gap-4 mt-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-gradient-to-br from-pink-400 to-rose-400 rounded-full flex items-center justify-center text-white font-bold">
+                        {tutorial?.instructor.avatar}
+                      </div>
+                      <div>
+                        <div className="font-semibold">Created by {tutorial?.instructor.name}</div>
+                        <div className="text-sm text-blue-100">{tutorial?.instructor.title}</div>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-700">
-                      <Video size={16} />
-                      <span>12.5 hours video</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-700">
-                      <Download size={16} />
-                      <span>Downloadable resources</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-700">
-                      <Award size={16} />
-                      <span>Certificate of completion</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-700">
-                      <MessageCircle size={16} />
-                      <span>Q&A support</span>
-                    </div>
-                  </div>
-
-                  <div className="border-t border-gray-200 pt-4 mt-4 flex gap-2">
-                    <button
-                      onClick={() => setIsFavorite(!isFavorite)}
-                      className={`flex-1 px-4 py-2 border-2 rounded-lg font-semibold transition-all ${
-                        isFavorite
-                          ? 'border-red-500 text-red-500 bg-red-50'
-                          : 'border-gray-300 text-gray-700 hover:border-gray-400'
-                      }`}
-                    >
-                      <Heart className={isFavorite ? 'fill-red-500' : ''} size={18} />
-                    </button>
-                    <button className="flex-1 px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:border-gray-400 transition-colors">
-                      <Share2 size={18} />
-                    </button>
                   </div>
                 </div>
+
+                {/* Right Card - Preview/Enrollment */}
+                <div className="lg:col-span-1">
+                  <div className="bg-white rounded-2xl shadow-2xl overflow-hidden sticky top-8">
+                    <div className={`${tutorial?.thumbnail} h-48 flex items-center justify-center relative group cursor-pointer`}>
+                      <div className="w-16 h-16 bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <Play className="text-white ml-1" size={32} />
+                      </div>
+                      <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm">
+                        Preview
+                      </div>
+                    </div>
+
+                    <div className="p-6">
+                      <div className="flex items-baseline gap-3 mb-6">
+                        <div className="text-4xl font-bold text-gray-900">${tutorial?.price}</div>
+                        <div className="text-xl text-gray-400 line-through">${tutorial?.originalPrice}</div>
+                        <div className="px-2 py-1 bg-green-100 text-green-700 rounded text-sm font-semibold">
+                          50% OFF
+                        </div>
+                      </div>
+
+                      {!isEnrolled ? (
+                        <>
+                          <button
+                            onClick={() => setIsEnrolled(true)}
+                            className="w-full px-6 py-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl font-bold text-lg hover:shadow-xl transition-all mb-3"
+                          >
+                            Enroll Now
+                          </button>
+                          <button className="w-full px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:border-gray-400 transition-colors mb-4">
+                            Add to Cart
+                          </button>
+                        </>
+                      ) : (
+                        <button className="w-full px-6 py-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl font-bold text-lg hover:shadow-xl transition-all mb-4 flex items-center justify-center gap-2">
+                          <CheckCircle size={24} />
+                          Enrolled - Start Learning
+                        </button>
+                      )}
+
+                      <div className="text-center text-sm text-gray-500 mb-4">
+                        30-Day Money-Back Guarantee
+                      </div>
+
+                      <div className="border-t border-gray-200 pt-4 space-y-3">
+                        <div className="flex items-center gap-2 text-sm text-gray-700">
+                          <Video size={16} />
+                          <span>12.5 hours video</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-700">
+                          <Download size={16} />
+                          <span>Downloadable resources</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-700">
+                          <Award size={16} />
+                          <span>Certificate of completion</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-700">
+                          <MessageCircle size={16} />
+                          <span>Q&A support</span>
+                        </div>
+                      </div>
+
+                      <div className="border-t border-gray-200 pt-4 mt-4 flex gap-2">
+                        <button
+                          onClick={() => setIsFavorite(!isFavorite)}
+                          className={`flex-1 px-4 py-2 border-2 rounded-lg font-semibold transition-all ${
+                            isFavorite
+                              ? 'border-red-500 text-red-500 bg-red-50'
+                              : 'border-gray-300 text-gray-700 hover:border-gray-400'
+                          }`}
+                        >
+                          <Heart className={isFavorite ? 'fill-red-500' : ''} size={18} />
+                        </button>
+                        <button className="flex-1 px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:border-gray-400 transition-colors">
+                          <Share2 size={18} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
               </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-8 py-12">
+          {/* Main Content */}
+        
+                            <div className="max-w-7xl mx-auto px-8 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Content - Main Details */}
           <div className="lg:col-span-2 space-y-8">
@@ -306,7 +214,7 @@ export default function TutorialDetailPage() {
                     <div>
                       <h2 className="text-2xl font-bold text-gray-900 mb-4">What you'll learn</h2>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {tutorial.whatYouLearn.map((item, idx) => (
+                        {tutorial?.WhatYouLearn.map((item, idx) => (
                           <div key={idx} className="flex items-start gap-3">
                             <CheckCircle className="text-green-500 flex-shrink-0 mt-1" size={20} />
                             <span className="text-gray-700">{item}</span>
@@ -318,7 +226,7 @@ export default function TutorialDetailPage() {
                     <div>
                       <h2 className="text-2xl font-bold text-gray-900 mb-4">Requirements</h2>
                       <ul className="space-y-2">
-                        {tutorial.requirements.map((req, idx) => (
+                        {tutorial?.requirements.map((req, idx) => (
                           <li key={idx} className="flex items-start gap-3 text-gray-700">
                             <span className="text-blue-600 mt-1">•</span>
                             <span>{req}</span>
@@ -349,11 +257,11 @@ export default function TutorialDetailPage() {
                     <div className="flex items-center justify-between mb-6">
                       <h2 className="text-2xl font-bold text-gray-900">Course Curriculum</h2>
                       <div className="text-sm text-gray-600">
-                        {tutorial.curriculum.length} modules • {tutorial.curriculum.reduce((acc, m) => acc + m.lessons.length, 0)} lessons
+                        {tutorial?.curriculum.length} modules • {tutorial?.curriculum.reduce((acc, m) => acc + m.lessons.length, 0)} lessons
                       </div>
                     </div>
 
-                    {tutorial.curriculum.map((module, moduleIdx) => (
+                    {tutorial?.curriculum.map((module, moduleIdx) => (
                       <div key={moduleIdx} className="border-2 border-gray-200 rounded-xl overflow-hidden">
                         <button
                           onClick={() => setExpandedModule(expandedModule === moduleIdx ? -1 : moduleIdx)}
@@ -407,23 +315,23 @@ export default function TutorialDetailPage() {
                     <h2 className="text-2xl font-bold text-gray-900 mb-6">About the Instructor</h2>
                     <div className="flex items-start gap-6 mb-8">
                       <div className="w-24 h-24 bg-gradient-to-br from-pink-400 to-rose-400 rounded-full flex items-center justify-center text-white text-3xl font-bold flex-shrink-0">
-                        {tutorial.instructor.avatar}
+                        {tutorial?.instructor.avatar}
                       </div>
                       <div>
-                        <h3 className="text-2xl font-bold text-gray-900 mb-2">{tutorial.instructor.name}</h3>
-                        <p className="text-gray-600 mb-4">{tutorial.instructor.title}</p>
+                        <h3 className="text-2xl font-bold text-gray-900 mb-2">{tutorial?.instructor.name}</h3>
+                        <p className="text-gray-600 mb-4">{tutorial?.instructor.title}</p>
                         <div className="flex flex-wrap gap-6 text-sm">
                           <div className="flex items-center gap-2">
                             <Star className="fill-yellow-400 text-yellow-400" size={16} />
-                            <span className="font-semibold">{tutorial.instructor.rating} Instructor Rating</span>
+                            <span className="font-semibold">{tutorial?.instructor.rating} Instructor Rating</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <Users size={16} />
-                            <span>{tutorial.instructor.students} Students</span>
+                            <span>{tutorial?.instructor.students} Students</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <Play size={16} />
-                            <span>{tutorial.instructor.courses} Courses</span>
+                            <span>{tutorial?.instructor.courses} Courses</span>
                           </div>
                         </div>
                       </div>
@@ -450,7 +358,7 @@ export default function TutorialDetailPage() {
                     </div>
 
                     <div className="space-y-6">
-                      {tutorial.reviews.map((review, idx) => (
+                      {tutorial?.reviews.map((review, idx) => (
                         <div key={idx} className="p-6 bg-gray-50 rounded-xl">
                           <div className="flex items-start gap-4 mb-4">
                             <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
@@ -463,7 +371,7 @@ export default function TutorialDetailPage() {
                                   <div className="text-sm text-gray-500">{review.date}</div>
                                 </div>
                                 <div className="flex items-center gap-1">
-                                  {[...Array(review.rating)].map((_, i) => (
+                                  {[...Array(Number(review.rating))].map((_, i) => (
                                     <Star key={i} className="fill-yellow-400 text-yellow-400" size={16} />
                                   ))}
                                 </div>
@@ -497,28 +405,28 @@ export default function TutorialDetailPage() {
                     <BarChart size={18} />
                     <span>Skill Level</span>
                   </div>
-                  <span className="font-semibold text-gray-900">{tutorial.difficulty}</span>
+                  <span className="font-semibold text-gray-900">{tutorial?.difficulty}</span>
                 </div>
                 <div className="flex items-center justify-between pb-3 border-b border-gray-100">
                   <div className="flex items-center gap-2 text-gray-600">
                     <Users size={18} />
                     <span>Students</span>
                   </div>
-                  <span className="font-semibold text-gray-900">{tutorial.students.toLocaleString()}</span>
+                  <span className="font-semibold text-gray-900">{tutorial?.students.toLocaleString()}</span>
                 </div>
                 <div className="flex items-center justify-between pb-3 border-b border-gray-100">
                   <div className="flex items-center gap-2 text-gray-600">
                     <Clock size={18} />
                     <span>Duration</span>
                   </div>
-                  <span className="font-semibold text-gray-900">{tutorial.duration}</span>
+                  <span className="font-semibold text-gray-900">{tutorial?.duration}</span>
                 </div>
                 <div className="flex items-center justify-between pb-3 border-b border-gray-100">
                   <div className="flex items-center gap-2 text-gray-600">
                     <Calendar size={18} />
                     <span>Last Updated</span>
                   </div>
-                  <span className="font-semibold text-gray-900">{tutorial.lastUpdated}</span>
+                  <span className="font-semibold text-gray-900">{tutorial?.lastUpdated}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-gray-600">
@@ -554,9 +462,8 @@ export default function TutorialDetailPage() {
           </div>
         </div>
       </div>
-    </div>
         </div>
+      </div>
     </div>
-  
   );
 }
