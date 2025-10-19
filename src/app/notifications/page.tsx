@@ -1,28 +1,30 @@
 'use client'
 import SideBar from '@/components/sideBar'
+import { useSidebar } from '@/contexts/sideBarContext';
 import React from 'react'
 
 function page() {
-        const [currentPage, setCurrentPage] = React.useState('notifications');
+  const [currentPage, setCurrentPage] = React.useState('notifications');
+  const {isCollapsedDesktop} = useSidebar()
     
   return (
-     <div className="flex h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-         <SideBar id={"notifications"} />
-      <div className="flex-1 overflow-auto">
+     <div className={`flex flex-col min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50  ${isCollapsedDesktop ? "lg:ml-[70px]" : "lg:ml-[250px]"}`}>
+
+      <div className="flex ">
           {currentPage === 'notifications' && (
-          <div className="p-8">
+          <div className="p-8 flex-1">
             <div className="mb-8">
               <h1 className="text-4xl font-bold text-gray-900 mb-2">Notifications</h1>
               <p className="text-gray-600">Stay updated with your latest activities</p>
             </div>
 
-            <div className="max-w-4xl">
+            <div className=" flex flex-col">
               {/* Notification Filters */}
               <div className="flex gap-3 mb-6">
                 {['All', 'Unread', 'Courses', 'Messages', 'System'].map((filter, idx) => (
                   <button
                     key={idx}
-                    className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                    className={`px-4 py-2 rounded-lg font-medium transition-all cursor-pointer ${
                       idx === 0
                         ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'
                         : 'bg-white text-gray-600 hover:bg-gray-50'
@@ -34,7 +36,7 @@ function page() {
               </div>
 
               {/* Notifications List */}
-              <div className="space-y-4">
+              <div className="space-y-4 flex-1 ">
                 {[
                   {
                     icon: '🎉',
@@ -87,7 +89,7 @@ function page() {
                 ].map((notif, idx) => (
                   <div
                     key={idx}
-                    className={`bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all cursor-pointer ${
+                    className={`bg-white rounded-2xl shadow p-6 hover:shadow transition-all cursor-pointer ${
                       notif.unread ? 'border-l-4 border-blue-500' : ''
                     }`}
                   >
@@ -112,7 +114,7 @@ function page() {
 
               {/* Load More */}
               <div className="text-center mt-8">
-                <button className="px-6 py-3 border-2 border-gray-200 rounded-xl font-medium hover:border-blue-500 hover:text-blue-500 transition-all">
+                <button className="px-6 py-3 cursor-pointer border-2 border-gray-200 rounded-xl font-medium hover:border-blue-500 hover:text-blue-500 transition-all">
                   Load More Notifications
                 </button>
               </div>

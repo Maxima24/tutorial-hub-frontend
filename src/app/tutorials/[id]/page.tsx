@@ -6,6 +6,7 @@ import {
 import SideBar from '@/components/sideBar';
 import useTutorialsStore from '@/store/tutorial-store';
 import { useParams, useRouter } from 'next/navigation';
+import { useSidebar } from '@/contexts/sideBarContext';
 
 export default function TutorialDetailPage() {
   const { id } = useParams();
@@ -32,10 +33,10 @@ export default function TutorialDetailPage() {
       default: return <Play size={16} />;
     }
   };
+  const {isCollapsedDesktop} = useSidebar();
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      <SideBar id={`tutorial-ind`} />
+    <div className={`flex flex-col min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50  ${isCollapsedDesktop ? "lg:ml-[70px]" : "lg:ml-[250px]"}`}>
       <div className="flex-1 overflow-auto">
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
           

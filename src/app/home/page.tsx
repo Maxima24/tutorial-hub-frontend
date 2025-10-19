@@ -1,11 +1,11 @@
 'use client'
 import React from 'react';
 import { Home, BookOpen, Settings, MessageCircle, Bell, Menu, X, Play, Clock, TrendingUp, Award, ChevronRight } from 'lucide-react';
-import SideBar from '@/components/sideBar';
+import { useSidebar } from '@/contexts/sideBarContext';
 
 export default function LearningPlatform() {
-  const [currentPage, setCurrentPage] = React.useState('dashboard'); // ✅ show dashboard by default
-
+  const [currentPage, setCurrentPage] = React.useState('dashboard'); 
+  const {isCollapsedDesktop} = useSidebar();
   const stats = [
     { label: 'Courses Enrolled', value: '12', icon: BookOpen, color: 'from-blue-500 to-cyan-500' },
     { label: 'Hours Learned', value: '48', icon: Clock, color: 'from-purple-500 to-pink-500' },
@@ -20,16 +20,15 @@ export default function LearningPlatform() {
   ];
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      <SideBar id={"home"} />
+    <div className={`flex flex-col min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50  ${isCollapsedDesktop ? "lg:ml-[70px]" : "lg:ml-[250px]"}`}>
       <div className="flex-1 overflow-auto">
         {currentPage === 'dashboard' && (
-          <div className="p-8">
+          <div className="lg:p-8 p-4">
             {/* Header with Time Greeting */}
             <div className="mb-8">
               <div className="flex items-center justify-between">
                 <div>
-                  <h1 className="text-5xl font-bold text-gray-900 mb-3">
+                  <h1 className="md:text-3xl text-2xl font-bold text-gray-900 mb-3">
                     Welcome back, John! 👋
                   </h1>
                   <p className="text-lg text-gray-600">
@@ -55,11 +54,11 @@ export default function LearningPlatform() {
                 return (
                   <div
                     key={idx}
-                    className="relative bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 cursor-pointer overflow-hidden group"
+                    className="relative bg-white rounded-2xl p-6 shadow-lg hover:shadow transition-all duration-300 hover:-translate-y-2 cursor-pointer overflow-hidden group"
                   >
-                    <div className={`absolute inset-0 bg-gradient-to-br ${stat.color} opacity-0 group-hover:opacity-5 transition-opacity duration-300`}></div>
+                    <div className={`absolute inset-0 bg-gradient-to-br ${stat.color} opacity-10 group-hover:opacity-5 transition-opacity duration-300`}></div>
                     <div className="relative z-10">
-                      <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center justify-between mb-2">
                         <div className={`w-14 h-14 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300`}>
                           <Icon className="text-white" size={26} />
                         </div>
@@ -70,7 +69,7 @@ export default function LearningPlatform() {
                       </div>
                       <div className="text-4xl font-bold text-gray-900 mb-2">{stat.value}</div>
                       <div className="text-sm font-medium text-gray-600">{stat.label}</div>
-                      <div className="mt-4 pt-4 border-t border-gray-100">
+                      <div className=" pt-4 border-t border-gray-100">
                         <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
                           <span>This Week</span>
                           <span className="font-semibold">85%</span>
@@ -97,11 +96,11 @@ export default function LearningPlatform() {
                     View All <ChevronRight size={18} />
                   </button>
                 </div>
-                <div className="space-y-4">
+                <div className="space-y-2">
                   {recentCourses.map((course, idx) => (
-                    <div key={idx} className="flex items-center gap-5 p-5 rounded-2xl hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-all cursor-pointer group border-2 border-transparent hover:border-blue-100">
+                    <div key={idx} className="md:flex flex-col gap-5 md:p-5 p-3 rounded-2xl hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-all cursor-pointer border-2 border-transparent hover:border-blue-100">
                       <div className="relative">
-                        <div className="w-20 h-20 bg-gradient-to-br from-blue-400 to-purple-500 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-2xl group-hover:scale-110 transition-all duration-300">
+                        <div className="w-20 h-20 bg-gradient-to-br from-blue-400 to-purple-500 rounded-2xl flex items-center justify-center shadow group-hover:shadow group-hover:scale-110 transition-all duration-300">
                           <Play className="text-white" size={28} />
                         </div>
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 rounded-2xl transition-colors flex items-center justify-center">
