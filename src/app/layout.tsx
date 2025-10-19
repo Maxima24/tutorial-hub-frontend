@@ -4,7 +4,7 @@ import "./globals.css";
 import { SidebarProvider } from "@/contexts/sideBarContext";
 import { usePathname } from "next/navigation";
 import { getPageConfig } from "@/lib/config/dashboard-config";
-import { Navbar } from "@/components/navbar";
+import {Navbar} from "@/components/navbar";
 
 
 
