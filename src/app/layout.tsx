@@ -4,6 +4,7 @@ import "./globals.css";
 import { SidebarProvider } from "@/contexts/sideBarContext";
 import { usePathname } from "next/navigation";
 import { getPageConfig } from "@/lib/config/dashboard-config";
+import { Sidebar } from '@/components/sidebar';
 import {Navbar} from "@/components/navbar";
 
 
@@ -28,6 +29,7 @@ export default function RootLayout({
       <body >
         <div className="flex w-full ">
           {/* <Sidebar/> */}
+            <Sidebar/>
           {/**main content */}
           <div  className="w-full flex-1 flex flex-col ">
             <Navbar
