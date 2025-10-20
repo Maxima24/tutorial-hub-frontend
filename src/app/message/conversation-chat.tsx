@@ -1,35 +1,24 @@
-
-'use client'
-import React from 'react'
-import { ArrowLeft, ChevronLeft, Search, Send } from 'lucide-react';
-import { useSidebar } from '@/contexts/sideBarContext';
-import { Sidebar } from '@/components/sidebar';
-import ConversationList from '@/components/conversation-list';
-import { useRouter } from 'next/navigation';
+"use client"
+import { useSidebar } from "@/contexts/sideBarContext";
+import { ArrowLeft, Send } from "lucide-react";
+import Link from "next/link";
 
 
+function Conversationchat() {
 
-function page() {
-    const {isCollapsedDesktop, showChat} = useSidebar();
-    const router = useRouter()
-  return (
+    const {isCollapsedDesktop} = useSidebar();
 
-     <div className = {`flex flex-col min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50  ${isCollapsedDesktop ? "lg:ml-[70px]" : "lg:ml-[250px]"}`}>
-     <div className="flex-1  ">
-          <div className="lg:p-8 flex overflow-auto max-h-screen sm:p-3  ">
-            <div className="flex gap-4  w-full ">
-              {/* Conversations List */}
-              {/*<div></div>*/}
-              <ConversationList/>
-
-              {/* Chat Window */}
-              <div className={` flex-1 bg-white sm:rounded-md shadow md:flex hidden flex-col lg:w-3/4 w-full `}>
+    return (
+        <div className={` flex  flex-col justify-center overflow-auto  sm:rounded-md shadow    ${isCollapsedDesktop ? "lg:ml-[70px]" : "lg:ml-[250px]"}`}>
                 {/* Chat Header */}
+            <div className="flex-1 overflow-auto bg-white">
                 <div className="p-4 border-b border-gray-100 flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div onClick={() => router.push("/message/conversation-list")} className='cursor-pointer'>
-                      <ArrowLeft className='w-6 h-6 lg:hidden flex'/>
+                    <Link href={"/message"}>
+                    <div className='cursor-pointer'>
+                      <ArrowLeft className='w-6 h-6 '/>
                     </div>
+                    </Link>
                     <div className="w-10 h-10 bg-gradient-to-br from-pink-500 to-rose-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
                       SJ
                     </div>
@@ -44,7 +33,7 @@ function page() {
                 </div>
 
                 {/* Messages */}
-                <div className="flex-1 overflow-y-auto scrollbar-hide md:max-h-[600px]  p-6 space-y-6 text-sm">
+                <div className=" overflow-y-auto max-h-[400px] scrollbar-hide  p-6 space-y-6 text-sm">
                   <div className="flex justify-start">
                     <div className="bg-gray-100 rounded-2xl rounded-tl-none px-4 py-3 md:max-w-xs max-w-[220px] ">
                       <p className="text-gray-900">Hi! I just finished the React Hooks tutorial. It was amazing!</p>
@@ -72,7 +61,7 @@ function page() {
                 </div>
 
                 {/* Message Input */}
-                <div className="p-4 border-t border-gray-100  ">
+                <div className="p-4 border-t border-gray-100   ">
                   <div className="flex gap-3">
                     <input
                       type="text"
@@ -84,14 +73,10 @@ function page() {
                     </button>
                   </div>
                 </div>
-              </div>
             </div>
-
-          </div>
-
-     </div>
-     </div>
-  )
+        </div>
+  );
+    
 }
 
-export default page
+export default Conversationchat

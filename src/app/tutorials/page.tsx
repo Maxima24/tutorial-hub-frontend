@@ -22,7 +22,7 @@ function Page() {
           <div className="p-8">
             {/* Header */}
             <div className="mb-8">
-              <h1 className="md:text-3xl text-2xl font-bold text-gray-900 mb-2">Explore Tutorials</h1>
+              <h1 className=" text-2xl font-bold text-gray-900 mb-2">Explore Tutorials</h1>
               <p className="text-gray-600 text-[18px]">Master new skills with expert-led courses</p>
             </div>
 

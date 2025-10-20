@@ -2,7 +2,7 @@ import React from "react"
 
 import { useSidebar } from "@/contexts/sideBarContext"
 import { getPageConfig, PageConfig } from "@/lib/config/dashboard-config"
-import { ArrowLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, ChevronRight, Moon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -23,7 +23,7 @@ export const Navbar  = ({title, icon: Icon, parent}: PageConfig) =>{
 
     return(
         <div className= {`top-0 z-[1000]  sticky lg:px-8 px-2 py-6 shadow bg-white   ${isCollapsedDesktop ? "lg:ml-[70px]" : "lg:ml-[250px]"} ${scrolled?"bg-white/20 backdrop-blur-md shadow-md":"bg-white"}`}>
-            
+            <div className="flex justify-between">
             <div className="flex items-center gap-2">
                 {currentPage.icon && <currentPage.icon className="w-6 h-6 text-blue-700 ml-2" />}
                 {parentPage ? (
@@ -42,6 +42,14 @@ export const Navbar  = ({title, icon: Icon, parent}: PageConfig) =>{
                       <span className="text-gray-400"><ChevronRight/></span>
                      </>
                 )}
+            </div>
+            
+            <div className="flex gap-4 items-center">
+                <div className="text-blue-600">
+                    <Moon/>
+                </div>
+                <button className="cursor-pointer">Sign up</button>
+            </div>
             </div>
         </div>
     )
