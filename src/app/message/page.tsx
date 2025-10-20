@@ -2,10 +2,10 @@
 'use client'
 import React from 'react'
 import { ArrowLeft, ChevronLeft, Search, Send } from 'lucide-react';
-import { useSidebar } from '@/contexts/sideBarContext';
+import {useMiniSidebar} from "@/contexts/miniSideBarContext"
 
 function page() {
-    const {isCollapsedDesktop} = useSidebar()
+    const {isCollapsedDesktop} = useMiniSidebar()
   return (
      <div className = {`flex flex-col min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50  ${isCollapsedDesktop ? "lg:ml-[70px]" : "lg:ml-[250px]"}`}>
      <div className="flex-1 overflow-auto ">

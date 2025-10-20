@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import useTutorialsStore from '@/store/tutorial-store';
 import { useParams, useRouter } from 'next/navigation';
-import { useSidebar } from '@/contexts/sideBarContext';
+import {useSidebar} from "@/contexts/sideBarContext"
 
 export default function TutorialDetailPage() {
   const { id } = useParams();

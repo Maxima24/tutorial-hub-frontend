@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { getPageConfig } from "@/lib/config/dashboard-config";
 import { Sidebar } from '@/components/sidebar';
 import {Navbar} from "@/components/navbar";
+import { MiniSideBarProvider } from "@/contexts/miniSideBarContext";
 
 
 
@@ -26,6 +27,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <SidebarProvider>
+        <MiniSideBarProvider>
       <body >
         <div className="flex w-full ">
           {/* <Sidebar/> */}
@@ -40,6 +42,7 @@ export default function RootLayout({
           </div>
         </div>
       </body>
+      </MiniSideBarProvider>
       </SidebarProvider>
     </html>
   );

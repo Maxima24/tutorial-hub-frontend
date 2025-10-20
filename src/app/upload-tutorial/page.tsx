@@ -1,5 +1,5 @@
 'use client'
-import { useSidebar } from '@/contexts/sideBarContext';
+import { useMiniSidebar } from '@/contexts/miniSideBarContext';
 import { ChevronRight,CheckCircle,Video,DollarSign,Send, ImageIcon } from 'lucide-react';
 import Image from 'next/image';
 import React from 'react'
@@ -8,7 +8,7 @@ function Page() {
      const [currentPage, setCurrentPage] = React.useState('dashboard');
      const [uploadStep,setUploadStep] = React.useState(1)
      const [uploadData,setUploadData] = React.useState<Record<string,string>>({})
-     const {isCollapsedDesktop} = useSidebar();
+     const {isCollapsedDesktop} = useMiniSidebar();
 
 
   return (

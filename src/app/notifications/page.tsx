@@ -1,10 +1,10 @@
 'use client'
-import { useSidebar } from '@/contexts/sideBarContext';
+import {useMiniSidebar} from "@/contexts/miniSideBarContext"
 import React from 'react'
 
 function page() {
   const [currentPage, setCurrentPage] = React.useState('notifications');
-  const {isCollapsedDesktop} = useSidebar()
+  const {isCollapsedDesktop} = useMiniSidebar()
     
   return (
      <div className={`flex flex-col min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50  ${isCollapsedDesktop ? "lg:ml-[70px]" : "lg:ml-[250px]"}`}>

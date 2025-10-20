@@ -3,12 +3,12 @@ import React from 'react'
 import { Home, BookOpen, Settings, MessageCircle, Bell, Menu, X, Play, Clock, TrendingUp, Award, ChevronRight, Search, Filter, Star } from 'lucide-react';
 import useVideosStore from '@/store/videos-store';
 import {useRouter }from 'next/navigation';
-import { useSidebar } from '@/contexts/sideBarContext';
+import {useMiniSidebar} from "@/contexts/miniSideBarContext"
 
 
 function Page() {
   const router= useRouter()
-  const {isCollapsedDesktop} = useSidebar();
+  const {isCollapsedDesktop} = useMiniSidebar();
   const {videos,searchQuery,setSearchQuery,filteredVideos}= useVideosStore()
   const [currentPage, setCurrentPage] = React.useState('tutorials');
   const displayedVideos = searchQuery?filteredVideos:videos
