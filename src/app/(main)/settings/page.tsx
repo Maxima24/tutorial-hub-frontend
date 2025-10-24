@@ -1,15 +1,16 @@
 "use client"
-import { useSidebar } from '@/contexts/sideBarContext';
+import { MiniSidebar } from '@/components/minisidebar';
+import {useMiniSidebar} from "@/contexts/miniSideBarContext"
 import React from 'react'
-import { Sidebar } from '@/components/sidebar';
 
 function page() {
   const [currentPage, setCurrentPage] = React.useState('settings');
-  const {isCollapsedDesktop} = useSidebar();
+  const {isCollapsedDesktop} = useMiniSidebar();
     
   return (
-     <div className={`flex flex-col min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50  ${isCollapsedDesktop ? "lg:ml-[70px]" : "lg:ml-[250px]"}`}>
+     <div className={`flex flex-col min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 `}>
         <div className=" "></div>
+        <MiniSidebar/>
             {currentPage === 'settings' && (
           <div className="p-8">
             {/* Header */}
@@ -20,22 +21,7 @@ function page() {
 
             <div className="">
               {/* Settings Navigation */}
-              <div className="overflow-x-auto scrollbar-hide ">
-                <div className="flex gap-4 mb-4 sticky top-8 ">
-                  {['Profile', 'Account', 'Notifications', 'Privacy', 'Appearance', 'Language'].map((item, idx) => (
-                    <button
-                      key={idx}
-                      className={`w-full px-6 py-2 rounded-xl transition-all whitespace-nowrap cursor-pointer ${
-                        idx === 0
-                          ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white'
-                          : 'text-gray-600 hover:bg-gray-50 bg-white'
-                      }`}
-                    >
-                      {item}
-                    </button>
-                  ))}
-                </div>
-              </div>
+             <MiniSidebar/>
 
               {/* Settings Content */}
               <div className="lg:col-span-2 space-y-6">

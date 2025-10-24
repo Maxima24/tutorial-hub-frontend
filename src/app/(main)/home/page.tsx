@@ -1,12 +1,12 @@
 'use client'
 import React from 'react';
 import { Home, BookOpen, Settings, MessageCircle, Bell, Menu, X, Play, Clock, TrendingUp, Award, ChevronRight } from 'lucide-react';
-import { useSidebar } from '@/contexts/sideBarContext';
-import { Sidebar } from '@/components/sidebar';
+import {useMiniSidebar} from "@/contexts/miniSideBarContext"
+
 
 export default function LearningPlatform() {
   const [currentPage, setCurrentPage] = React.useState('dashboard'); 
-  const {isCollapsedDesktop} = useSidebar();
+  const {isCollapsedDesktop} = useMiniSidebar();
   const stats = [
     { label: 'Courses Enrolled', value: '12', icon: BookOpen, color: 'from-blue-500 to-cyan-500' },
     { label: 'Hours Learned', value: '48', icon: Clock, color: 'from-purple-500 to-pink-500' },
@@ -28,7 +28,7 @@ export default function LearningPlatform() {
   ];
 
   return (
-    <div className={`flex flex-col min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50  ${isCollapsedDesktop ? "lg:ml-[70px]" : "lg:ml-[250px]"}`}>
+    <div className={`flex flex-col min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 `}>
     
       <div className=" ">
       <div className="flex-1 overflow-auto">

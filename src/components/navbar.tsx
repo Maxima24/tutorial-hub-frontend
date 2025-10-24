@@ -4,12 +4,13 @@ import { useSidebar } from "@/contexts/sideBarContext"
 import { getPageConfig, PageConfig } from "@/lib/config/dashboard-config"
 import { ArrowLeft, ChevronRight, Moon } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 
 export const Navbar  = ({title, icon: Icon, parent}: PageConfig) =>{
     const [scrolled,setScrolled] = React.useState<boolean>(false)
     const {isCollapsedDesktop} = useSidebar();
+    const router = useRouter();
     const pathname = usePathname();
     const currentPage = getPageConfig(pathname);
     const parentPage = currentPage.parent ? getPageConfig(currentPage.parent) : null;
@@ -48,7 +49,7 @@ export const Navbar  = ({title, icon: Icon, parent}: PageConfig) =>{
                 <div className="text-blue-600">
                     <Moon/>
                 </div>
-                <button className="cursor-pointer">Sign up</button>
+                <button onClick={() => router.push("/signup")} className="cursor-pointer">Sign up</button>
             </div>
             </div>
         </div>

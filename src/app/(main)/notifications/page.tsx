@@ -77,7 +77,7 @@ function Page() {
   }, [sortOrder]);
 
   return (
-    <div className={`flex flex-col min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 ${isCollapsedDesktop ? "lg:ml-[70px]" : "lg:ml-[250px]"}`}>
+    <div className={`flex flex-col min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 `}>
       <div className="flex">
         {currentPage === 'notifications' && (
           <div className="p-4 sm:p-6 md:p-8 w-full ">
@@ -85,7 +85,7 @@ function Page() {
             <div className="mb-6 sm:mb-8  sm:text-left">
               <h1 className="text-2xl  font-bold text-gray-900 mb-2">Notifications</h1>
               <p className="text-gray-600 text-sm sm:text-base mb-4">Stay updated with your latest activities</p>
-
+            </div>
             {/* Filters */}
             <div className="flex gap-3 mb-4 overflow-x-auto scrollbar-hide pb-2">
               {['All', 'Unread', 'Courses', 'Messages', 'Review'].map((filter, idx) => (
@@ -135,10 +135,9 @@ function Page() {
                 Load More Notifications
               </button>
             </div>
-          </div>
+          </div> )}
 
-      </div> )}
-     </div>
+      </div>
     </div>
   );
 }

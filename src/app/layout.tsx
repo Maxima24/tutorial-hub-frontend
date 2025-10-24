@@ -4,8 +4,7 @@ import "./globals.css";
 import { SidebarProvider } from "@/contexts/sideBarContext";
 import { usePathname } from "next/navigation";
 import { getPageConfig } from "@/lib/config/dashboard-config";
-import {Navbar} from "@/components/navbar";
-import { Sidebar } from "@/components";
+import { MiniSideBarProvider } from "@/contexts/miniSideBarContext";
 
 
 
@@ -19,26 +18,18 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const pathname = usePathname();
+ // const pathname = usePathname();
   //to get current page configuration.
-  const currentPageConfig = getPageConfig(pathname) || { title: "Dashboard", subtitle: "Overview" } ;
+  //const currentPageConfig = getPageConfig(pathname) || { title: "Dashboard", subtitle: "Overview" } ;
 
   return (
     <html lang="en">
       <SidebarProvider>
+        <MiniSideBarProvider>
       <body >
-        <div className="flex w-full ">
-           <Sidebar/> 
-          {/**main content */}
-          <div  className="w-full flex-1 flex flex-col ">
-            <Navbar
-             title={currentPageConfig.title} 
-             icon={currentPageConfig.icon} 
-            />
-            {children}
-          </div>
-        </div>
+        {children}
       </body>
+      </MiniSideBarProvider>
       </SidebarProvider>
     </html>
   );
