@@ -3,18 +3,18 @@ import React from 'react'
 import { Home, BookOpen, Settings, MessageCircle, Bell, Menu, X, Play, Clock, TrendingUp, Award, ChevronRight, Search, Filter, Star } from 'lucide-react';
 import useVideosStore from '@/store/videos-store';
 import {useRouter }from 'next/navigation';
-import { useSidebar } from '@/contexts/sideBarContext';
+import {useMiniSidebar} from "@/contexts/miniSideBarContext"
 
 
 function Page() {
   const router= useRouter()
-  const {isCollapsedDesktop} = useSidebar();
+  const {isCollapsedDesktop} = useMiniSidebar();
   const {videos,searchQuery,setSearchQuery,filteredVideos}= useVideosStore()
   const [currentPage, setCurrentPage] = React.useState('tutorials');
   const displayedVideos = searchQuery?filteredVideos:videos
 
   return (
-    <div className={`flex flex-col min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50  ${isCollapsedDesktop ? "lg:ml-[70px]" : "lg:ml-[250px]"}`}>
+    <div className={`flex flex-col min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50  `}>
 
        <div className="flex-1 overflow-auto">
                   {/** main content */}

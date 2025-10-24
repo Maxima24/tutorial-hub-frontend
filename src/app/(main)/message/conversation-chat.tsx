@@ -9,7 +9,7 @@ function Conversationchat() {
     const {isCollapsedDesktop} = useSidebar();
 
     return (
-        <div className={` flex  flex-col justify-center overflow-auto  sm:rounded-md shadow    ${isCollapsedDesktop ? "lg:ml-[70px]" : "lg:ml-[250px]"}`}>
+        <div className={` flex  flex-col justify-center overflow-auto  sm:rounded-md shadow `}>
                 {/* Chat Header */}
             <div className="flex-1 overflow-auto bg-white">
                 <div className="p-4 border-b border-gray-100 flex items-center justify-between">
@@ -33,7 +33,7 @@ function Conversationchat() {
                 </div>
 
                 {/* Messages */}
-                <div className=" overflow-y-auto max-h-[400px] scrollbar-hide  p-6 space-y-6 text-sm">
+                <div className=" overflow-y-auto max-h-[380px] scrollbar-hide  p-6 space-y-6 text-sm">
                   <div className="flex justify-start">
                     <div className="bg-gray-100 rounded-2xl rounded-tl-none px-4 py-3 md:max-w-xs max-w-[220px] ">
                       <p className="text-gray-900">Hi! I just finished the React Hooks tutorial. It was amazing!</p>

@@ -1,5 +1,5 @@
 'use client'
-import { useSidebar } from '@/contexts/sideBarContext';
+import { useMiniSidebar } from '@/contexts/miniSideBarContext';
 import { ChevronRight,CheckCircle,Video,DollarSign,Send, ImageIcon } from 'lucide-react';
 import Image from 'next/image';
 import React from 'react'
@@ -8,11 +8,11 @@ function Page() {
      const [currentPage, setCurrentPage] = React.useState('dashboard');
      const [uploadStep,setUploadStep] = React.useState(1)
      const [uploadData,setUploadData] = React.useState<Record<string,string>>({})
-     const {isCollapsedDesktop} = useSidebar();
+     const {isCollapsedDesktop} = useMiniSidebar();
 
 
   return (
-      <div className={`flex flex-col min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50  ${isCollapsedDesktop ? "lg:ml-[70px]" : "lg:ml-[250px]"}`}>
+      <div className={`flex flex-col min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 `}>
         <div className="flex-1 overflow-auto">
           <div className="md:p-8 p-4">
       {/* Header */}

@@ -2,10 +2,9 @@
 'use client'
 import React from 'react'
 import { ArrowLeft, ChevronLeft, Search, Send } from 'lucide-react';
-import { useSidebar } from '@/contexts/sideBarContext';
-import { Sidebar } from '@/components/sidebar';
 import ConversationList from '@/components/conversation-list';
 import { useRouter } from 'next/navigation';
+import { useSidebar } from '@/contexts/sideBarContext';
 
 
 
@@ -14,10 +13,10 @@ function page() {
     const router = useRouter()
   return (
 
-     <div className = {`flex flex-col min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50  ${isCollapsedDesktop ? "lg:ml-[70px]" : "lg:ml-[250px]"}`}>
-     <div className="flex-1  ">
-          <div className="lg:p-8 flex overflow-auto max-h-screen sm:p-3  ">
-            <div className="flex gap-4  w-full ">
+     <div className = {`flex flex-col min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50  `}>
+     <div className="flex-1 overflow-auto ">
+          <div className="lg:p-8 sm:p-3 h-full ">
+            <div className="flex gap-4  w-full items-stretch ">
               {/* Conversations List */}
               {/*<div></div>*/}
               <ConversationList/>

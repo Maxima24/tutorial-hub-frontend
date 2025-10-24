@@ -19,7 +19,7 @@ export default async function BlogPage({params}: BlogPageProps) {
   //const Icon = blog.icon; // 
 
   return (
-    <div className="w-full min-h-screen fixed mt-25 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 ">
+    <div className="w-full min-h-screen  bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 ">
       <Conversationchat/>
     </div>
   )
