@@ -14,7 +14,7 @@ function Page() {
   const displayedVideos = searchQuery?filteredVideos:videos
 
   return (
-    <div className={`flex flex-col min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50  ${isCollapsedDesktop ? "lg:ml-[70px]" : "lg:ml-[250px]"}`}>
+    <div className={`flex flex-col min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50  `}>
 
        <div className="flex-1 overflow-auto">
                   {/** main content */}
@@ -22,7 +22,7 @@ function Page() {
           <div className="p-8">
             {/* Header */}
             <div className="mb-8">
-              <h1 className="md:text-3xl text-2xl font-bold text-gray-900 mb-2">Explore Tutorials</h1>
+              <h1 className=" text-2xl font-bold text-gray-900 mb-2">Explore Tutorials</h1>
               <p className="text-gray-600 text-[18px]">Master new skills with expert-led courses</p>
             </div>
 

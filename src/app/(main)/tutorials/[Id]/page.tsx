@@ -8,8 +8,8 @@ import { useParams, useRouter } from 'next/navigation';
 import {useSidebar} from "@/contexts/sideBarContext"
 
 export default function TutorialDetailPage() {
-  const { id } = useParams();
-  const tutorialId = Array.isArray(id) ? id[0] : id;
+  const { Id } = useParams();
+  const tutorialId = Array.isArray(Id) ? Id[0] : Id;
   const router = useRouter();
   const { searchedTutorial: tutorial, getTutorialById } = useTutorialsStore();
   const [isEnrolled, setIsEnrolled] = useState(false);
@@ -35,7 +35,7 @@ export default function TutorialDetailPage() {
   const {isCollapsedDesktop} = useSidebar();
 
   return (
-    <div className={`flex flex-col min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50  ${isCollapsedDesktop ? "lg:ml-[70px]" : "lg:ml-[250px]"}`}>
+    <div className={`flex flex-col min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50`}>
       <div className="flex-1 overflow-auto">
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
           

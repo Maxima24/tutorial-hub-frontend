@@ -8,24 +8,25 @@ function page() {
   const {isCollapsedDesktop} = useMiniSidebar();
     
   return (
-     <div className={`flex flex-col min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50  ${isCollapsedDesktop ? "lg:ml-[70px]" : "lg:ml-[250px]"}`}>
+     <div className={`flex flex-col min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 `}>
         <div className=" "></div>
+        <MiniSidebar/>
             {currentPage === 'settings' && (
           <div className="p-8">
             {/* Header */}
             <div className="mb-8">
-              <h1 className="md:text-3xl text-2xl font-bold text-gray-900 mb-2">Profile Settings</h1>
+              <h1 className=" text-2xl font-bold text-gray-900 mb-2">Profile Settings</h1>
               <p className="text-gray-600">Manage your account and preferences</p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="">
               {/* Settings Navigation */}
              <MiniSidebar/>
 
               {/* Settings Content */}
               <div className="lg:col-span-2 space-y-6">
                 {/* Profile Settings */}
-                <div className="bg-white rounded-2xl shadow p-6">
+                <div className="bg-white rounded-2xl shadow shadow-blue-200/80 p-6">
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Profile Information</h2>
                   
                   {/* Avatar Upload */}

@@ -2,7 +2,8 @@
 "use client"
 import { createContext, useState, useEffect,  useRef, useContext } from "react";
 import type { ReactNode } from "react";
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
+import { Conversation } from "@/components/conversation-list";
 
 type SidebarContextType = {
   isOpenMobile: boolean;
@@ -15,6 +16,8 @@ type SidebarContextType = {
   handleNewProducts: () =>  void;
   sidebarRef: React.RefObject<HTMLDivElement | null>;
   //isMobile: boolean;
+  handleSelect: (conv: Conversation) => void;
+  showChat:boolean; 
   newProducts: boolean;
 };
 type PageType = "Home" | "Tutorials" | "Settings" | "Messages" | "Notifications" | "Upload Video";
@@ -53,6 +56,15 @@ export const SidebarProvider = ({ children }: { children: ReactNode }) => {
      setIsOpenMobile(false)
   };
 
+  const [showChat, setShowChat] = useState(false);
+  const router = useRouter();
+
+  // Function to handle click on conversation
+  const handleSelect = (conv: Conversation) => {
+    const username = conv.name.toLowerCase().replace(/\s+/g, '-');
+    router.push(`/message/chat/${username}`);
+    setShowChat(true);
+  };
 
   useEffect(() => {
     const handleResize = () => {
@@ -82,7 +94,7 @@ export const SidebarProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <SidebarContext.Provider
-      value={{ isOpenMobile, sidebarRef, sortMenu, handleNewProducts, newProducts, handleClickOutside,  handleSidebarButton, toggleMobile, isCollapsedDesktop, toggleDesktop }}
+      value={{handleSelect, showChat, isOpenMobile, sidebarRef, sortMenu, handleNewProducts, newProducts, handleClickOutside,  handleSidebarButton, toggleMobile, isCollapsedDesktop, toggleDesktop }}
     >
     {children}
     </SidebarContext.Provider>
