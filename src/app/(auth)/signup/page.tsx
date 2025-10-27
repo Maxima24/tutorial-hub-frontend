@@ -3,11 +3,13 @@ import { FormErrors } from "@/interfaces/authInterface";
 import validateSignup from "@/lib/config/validate-signup";
 import { Eye, EyeOff, Lock, Mail, User } from "lucide-react"
 import Link from "next/link"
+import React, { useEffect } from "react";
 import { useState } from "react";
 
 type InputChangeEvent = React.ChangeEvent<HTMLInputElement>;
 
 function Page() {
+  const[isMounted,setIsMounted] = React.useState<boolean |null>(null)
     const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -19,6 +21,7 @@ function Page() {
       password: "",
       confirmPassword: "",
     });
+    useEffect(()=>{setIsMounted(true)},[])
 
     function handleOnChange(e: InputChangeEvent) {
       const { name, value } = e.target;
@@ -51,8 +54,8 @@ function Page() {
         setIsLoading(false);
       }
     };
-
-    return (
+    if(isMounted){
+         return (
     <div className="flex min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
 
        <div className="w-full lg:w-2/5 xl:w-2/3 flex items-center justify-center p-6 lg:p-8">
@@ -225,6 +228,8 @@ function Page() {
       
     </div>
     )
+    }
+   
 }
 
 export default Page

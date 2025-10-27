@@ -1,3 +1,4 @@
+'use client'
 import React from "react";
 import { usePathname } from "next/navigation";
 type PageType =
@@ -41,14 +42,22 @@ export const MiniSideBarProvider = ({
   const [isOpenMobile, setIsOpenMobile] = React.useState<boolean>(false);
   const [isCollapsedDesktop, setIsCollapsedDesktop] = React.useState<boolean>(false);
   const [path,setPath] = React.useState()
-  const [isMobile, setIsMobile] = React.useState(window.innerWidth < 1024);
+  const [isMobile, setIsMobile] = React.useState(false);
   const sideBarRef = React.useRef<HTMLDivElement | null>(null);
   const [newProducts, setNewProducts] = React.useState<boolean>(false);
   const pathname = usePathname();
   const [sortMenu, setSortMenu] = React.useState<PageType>("Profile");
+  React.useEffect(() => {
+  const handleResize = () => setIsMobile(window.innerWidth < 1024);
+  handleResize(); // set initial state
+  window.addEventListener("resize", handleResize);
+
+  return () => window.removeEventListener("resize", handleResize);
+}, []);
   const handleNewProducts = () => {
     setNewProducts(!newProducts);
   };
+
   const handleSideBarButton = () => {
     setSortMenu(pathname.replace("/", "") as PageType);
     setIsOpenMobile(false);
