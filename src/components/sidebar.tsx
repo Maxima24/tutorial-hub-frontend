@@ -1,9 +1,19 @@
 "use client";
 
 import { useSidebar } from "@/contexts/sideBarContext";
-import { Home, BookOpen, Settings, MessageCircle, Bell, Menu, X, Video } from "lucide-react";
+import {
+  Home,
+  BookOpen,
+  Settings,
+  MessageCircle,
+  Bell,
+  Menu,
+  X,
+  Video,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import {useGetUser} from "@/service/mutations/auth"
 
 export const Sidebar = () => {
   const {
@@ -16,14 +26,30 @@ export const Sidebar = () => {
 
   const isSidebarOpen = isOpenMobile || !isCollapsedDesktop;
   const pathname = usePathname();
+  const {mutateAsync:userData,isPending} = useGetUser()
 
   const navItems = [
     { id: "Home", label: "Home", icon: Home, path: "/home" },
     { id: "Tutorials", label: "Tutorials", icon: BookOpen, path: "/tutorials" },
     { id: "Settings", label: "Settings", icon: Settings, path: "/settings" },
-    { id: "Message", label: "Messages", icon: MessageCircle, path: "/message" },
-    { id: "Notifications", label: "Notifications", icon: Bell, path: "/notifications" },
-    { id: "Upload-tutorial", label: "Upload Video", icon: Video, path: "/upload-tutorial" },
+    {
+      id: "Message",
+      label: "Messages",
+      icon: MessageCircle,
+      path: "/messages",
+    },
+    {
+      id: "Notifications",
+      label: "Notifications",
+      icon: Bell,
+      path: "/notifications",
+    },
+    {
+      id: "Upload-tutorial",
+      label: "Upload Video",
+      icon: Video,
+      path: "/upload-tutorial",
+    },
   ];
 
   return (
@@ -51,28 +77,26 @@ export const Sidebar = () => {
       <nav className="flex-1 p-4 space-y-2">
         {navItems.map((item) => {
           const Icon = item.icon;
-          const isActive =  pathname.startsWith(`/${item.id.toLowerCase()}`);
+          const isActive = pathname.startsWith(`/${item.id.toLowerCase()}`);
 
           return (
-            <Link 
-            href={item.path }
-            key={item.id}
-            >
-            <button
-              
-              onClick={() => handleSidebarButton(item.id as any)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 cursor-pointer ${
-                isActive
-                  ? "bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-blue-500/30"
-                  : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-              }`}
-            >
-              <Icon size={20} />
-              {isSidebarOpen && <span className="font-medium">{item.label}</span>}
-              {isActive && (
-                <div className="ml-auto w-2 h-2 bg-white rounded-full animate-pulse" />
-              )}
-            </button>
+            <Link href={item.path} key={item.id}>
+              <button
+                onClick={() => handleSidebarButton(item.id as any)}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 cursor-pointer ${
+                  isActive
+                    ? "bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-blue-500/30"
+                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                }`}
+              >
+                <Icon size={20} />
+                {isSidebarOpen && (
+                  <span className="font-medium">{item.label}</span>
+                )}
+                {isActive && (
+                  <div className="ml-auto w-2 h-2 bg-white rounded-full animate-pulse" />
+                )}
+              </button>
             </Link>
           );
         })}

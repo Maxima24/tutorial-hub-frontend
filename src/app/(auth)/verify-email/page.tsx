@@ -1,12 +1,21 @@
 "use client"
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useState, useRef } from "react";
-
-export default function ConfirmPasscode(){
-
-    const [isLoading, setIsLoading] = useState(false);
+import { verifyCode } from "@/service/authServices/verify-code";
+import { useUserStore } from "@/store/auth-store";
+import axios, { GenericHTMLFormElement } from "axios";
+import { useRouter } from "next/navigation";
+import { api } from "@/service/api";
+ 
+ const  ConfirmPasscode =()=>{
+  const user = useUserStore((state)=>state.user)
+  const router = useRouter()
+  const [isMounted,setIsMounted] = useState<boolean>(false)
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [isResending,setIsResending] = useState<boolean>(false)
     const [otp, setOtp] = useState(Array(6).fill(""));
+    const [code,setCode] = useState<string>()
     const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   
 
@@ -34,15 +43,80 @@ export default function ConfirmPasscode(){
         inputRefs.current[index + 1]?.focus();
       }
     };
+        useEffect(()=>{setIsMounted(true)},[])
+      
+    React.useEffect(()=>{
+        console.log(otp)
+        if(otp.length === 6){
+          const code = String(otp.join(""))
+          setCode(code)
+        }
+        console.log(otp.join(""))
+    },[otp])
+  if(!isMounted) return null
+    const handleSubmit = async (e:React.FormEvent<HTMLFormElement>)=>{
+      e.preventDefault()
+        setIsLoading(false)
+      try{
+          if(!user) throw new Error("User not found")
+            if(!code) throw new Error("No code inputed")
+              const updatedCode = code
+      const {email} = user
+         const isVerified = await verifyCode({code:updatedCode,email})
+       if(!isVerified) throw new Error("Verification failed please try again later");
+        router.push("/home")
+       
+      }catch(err){
+  if (axios.isAxiosError(err)){
+          console.log("Axios Error",err.message )
+          console.log("Axios error response",err.response?.data)
+          console.log("status",err.response?.status )
+        }
+        console.error("Verification error:", err);
+        alert(err)
+        router.push("/signin")
+      }finally{
+        setIsLoading(false)
+       
+      }
     
-    return(
-        <div className="lg:px-2 px-6 pt-8 h-screen"> 
-        <div className=" flex flex-col h-screen justify-center items-center ">
+
+    }
+    const handleResend = async ()=>{
+      setIsResending(true)
+        try{
+            if(!user) console.error("User not Found")
+                const {email} = user!
+        const response  = await api.post("/auth/resend-code",{email});
+        console.log(response)
+        if(!response) console.error("User not found")
+        }catch(err){
+            if (axios.isAxiosError(err)){
+          console.log("Axios Error",err.message )
+          console.log("Axios error response",err.response?.data)
+          console.log("status",err.response?.status )
+
+        }
+        console.error("Signup error:", err);
+        alert(err)
+        }
+        
+
+
+
+    
+
+
+    }
+
+    if(isMounted) return(
+        <div className=" lg:px-2 px-6 pt-8 h-screen "> 
+        <div className="h-full flex flex-col  justify-center items-center ">
             <div className="flex flex-col justify-center items-center">
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">Check Your Email</h1>
                 <p className="text-gray-600 text-center"> We have sent a passcode to your email.{""} Please enter it below: </p>
 
-                <form>
+                <form onSubmit={handleSubmit}>
                     <div className="flex justify-between my-8">
                       {otp.map((digit, index) => {
                           return (
@@ -76,10 +150,17 @@ export default function ConfirmPasscode(){
                       )}
                      </button> 
 
-                </form>      
+                </form> 
+               <button onClick={()=>handleResend()}>
+                           <div className="text-gray-400 bg-transparent  hover:cursor-pointer shadow-transparent hover:underline mt-2 hover:shadow-2xl hover:shadow-black">
+                  resend code
+                  </div>
+               </button>
+                   
                      
             </div>
         </div>
         </div>
-    )
+    );
 }
+export default ConfirmPasscode

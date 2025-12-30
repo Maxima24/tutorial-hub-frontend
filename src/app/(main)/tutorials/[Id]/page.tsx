@@ -1,469 +1,720 @@
-'use client'
-import React, { useState, useEffect } from 'react';
-import { 
-  ArrowLeft, Play, Clock, Users, Star, BarChart, Award, CheckCircle, Lock, Heart, Share2, Download, MessageCircle, ThumbsUp, ChevronDown, ChevronUp, Calendar, Video, FileText, Code 
-} from 'lucide-react';
-import useTutorialsStore from '@/store/tutorial-store';
-import { useParams, useRouter } from 'next/navigation';
-import {useSidebar} from "@/contexts/sideBarContext"
+"use client";
 
-export default function TutorialDetailPage() {
-  const { Id } = useParams();
-  const tutorialId = Array.isArray(Id) ? Id[0] : Id;
+import React, { useEffect, useState, useRef } from "react";
+import { useParams, useRouter } from "next/navigation";
+import Image from "next/image";
+import {
+  ArrowLeft,
+  Play,
+  Pause,
+  Volume2,
+  VolumeX,
+  Settings,
+  Maximize,
+  ThumbsUp,
+  ThumbsDown,
+  Share2,
+  Download,
+  MoreHorizontal,
+  ChevronDown,
+  Clock,
+  CheckCircle,
+  Star,
+} from "lucide-react";
+import { useGetVideos } from "@/service/query/vides.query";
+
+function VideoPlayerPage() {
+  const params = useParams();
   const router = useRouter();
-  const { searchedTutorial: tutorial, getTutorialById } = useTutorialsStore();
-  const [isEnrolled, setIsEnrolled] = useState(false);
-  const [activeTab, setActiveTab] = useState('overview');
-  const [expandedModule, setExpandedModule] = useState(0);
-  const [isFavorite, setIsFavorite] = useState(false);
+  const videoId = params.id as string;
+
+  const { data: tutorialVideos, isLoading } = useGetVideos();
+  const [currentVideo, setCurrentVideo] = useState<any>(null);
+
+  // Player state
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [showControls, setShowControls] = useState(true);
+  const [isBuffering, setIsBuffering] = useState(false);
+  const [volume, setVolume] = useState(1);
+  const [isMuted, setIsMuted] = useState(false);
+  const [playbackRate, setPlaybackRate] = useState(1);
+  const [showSettings, setShowSettings] = useState(false);
+  const [showDescription, setShowDescription] = useState(false);
+  const [watchedPercentage, setWatchedPercentage] = useState(0);
+
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const progressBarRef = useRef<HTMLDivElement>(null);
+  const settingsRef = useRef<HTMLDivElement>(null);
+  const isSeekingRef = useRef<boolean>(false);
+  const isScrubbingRef = useRef<boolean>(false);
+  const controlsTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    if (tutorialId) {
-      getTutorialById(tutorialId);
+    if (tutorialVideos && videoId) {
+      const video = tutorialVideos.find((v: any) => v.id === videoId);
+      setCurrentVideo(video ?? null);
     }
-  }, [tutorialId]);
+  }, [tutorialVideos, videoId]);
 
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'video': return <Video size={16} />;
-      case 'exercise': return <Code size={16} />;
-      case 'quiz': return <FileText size={16} />;
-      case 'project': return <Award size={16} />;
-      default: return <Play size={16} />;
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !currentVideo?.videoUrl) return;
+
+    // Reset state when source changes
+    setCurrentTime(0);
+    setDuration(0);
+    setWatchedPercentage(0);
+    setIsPlaying(false);
+
+    const onLoadedMetadata = () => {
+      if (!isNaN(video.duration)) {
+        setDuration(video.duration);
+      }
+    };
+
+    const onTimeUpdate = () => {
+      if (!isSeekingRef.current) {
+        setCurrentTime(video.currentTime);
+      }
+
+      if (video.duration > 0) {
+        const percentage = (video.currentTime / video.duration) * 100;
+        setWatchedPercentage((prev) => Math.max(prev, percentage));
+      }
+    };
+
+    const onWaiting = () => setIsBuffering(true);
+    const onCanPlay = () => setIsBuffering(false);
+    const onEnded = () => setIsPlaying(false);
+
+    // Force browser to reload metadata
+    video.load();
+
+    video.addEventListener("loadedmetadata", onLoadedMetadata);
+    video.addEventListener("timeupdate", onTimeUpdate);
+    video.addEventListener("waiting", onWaiting);
+    video.addEventListener("canplay", onCanPlay);
+    video.addEventListener("ended", onEnded);
+
+    return () => {
+      video.removeEventListener("loadedmetadata", onLoadedMetadata);
+      video.removeEventListener("timeupdate", onTimeUpdate);
+      video.removeEventListener("waiting", onWaiting);
+      video.removeEventListener("canplay", onCanPlay);
+      video.removeEventListener("ended", onEnded);
+    };
+  }, [currentVideo?.videoUrl]);
+
+  // useEffect(() => {
+  //   if (videoRef.current) {
+  //     videoRef.current.load();
+  //   }
+  // }, [currentVideo?.videoUrl]);
+  // Close settings when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        settingsRef.current &&
+        !settingsRef.current.contains(event.target as Node)
+      ) {
+        setShowSettings(false);
+      }
+    };
+
+    if (showSettings) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showSettings]);
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isScrubbingRef.current) return;
+      seekWithClientX(e.clientX);
+    };
+
+    const handleMouseUp = () => {
+      isScrubbingRef.current = false;
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, []);
+  const togglePlay = () => {
+    if (!videoRef.current) return;
+    if (isPlaying) {
+      videoRef.current.pause();
+    } else {
+      videoRef.current.play();
+    }
+    setIsPlaying(!isPlaying);
+  };
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const video = videoRef.current;
+      const container = containerRef.current;
+      if (!video) return;
+
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA") return;
+
+      switch (e.key) {
+        case " ":
+        case "k":
+        case "K":
+          e.preventDefault();
+          if (video.paused) {
+            video.play();
+            setIsPlaying(true);
+          } else {
+            video.pause();
+            setIsPlaying(false);
+          }
+          break;
+
+        case "ArrowRight":
+        case "l":
+        case "L":
+          e.preventDefault();
+          video.currentTime = Math.min(
+            video.currentTime + 5,
+            video.duration || video.currentTime
+          );
+          setCurrentTime(video.currentTime);
+          break;
+
+        case "ArrowLeft":
+        case "j":
+        case "J":
+          e.preventDefault();
+          video.currentTime = Math.max(video.currentTime - 5, 0);
+          setCurrentTime(video.currentTime);
+          break;
+
+        case "ArrowUp":
+          e.preventDefault();
+          const newVolumeUp = Math.min(video.volume + 0.1, 1);
+          video.volume = newVolumeUp;
+          setVolume(newVolumeUp);
+          setIsMuted(false);
+          video.muted = false;
+          break;
+
+        case "ArrowDown":
+          e.preventDefault();
+          const newVolumeDown = Math.max(video.volume - 0.1, 0);
+          video.volume = newVolumeDown;
+          setVolume(newVolumeDown);
+          if (newVolumeDown === 0) {
+            setIsMuted(true);
+          }
+          break;
+
+        case "m":
+        case "M":
+          e.preventDefault();
+          const newMuted = !video.muted;
+          video.muted = newMuted;
+          setIsMuted(newMuted);
+          break;
+
+        case "f":
+        case "F":
+          e.preventDefault();
+          if (!document.fullscreenElement && container) {
+            container.requestFullscreen();
+          } else if (document.fullscreenElement) {
+            document.exitFullscreen();
+          }
+          break;
+
+        case "0":
+        case "1":
+        case "2":
+        case "3":
+        case "4":
+        case "5":
+        case "6":
+        case "7":
+        case "8":
+        case "9":
+          e.preventDefault();
+          const percent = parseInt(e.key) / 10;
+          video.currentTime = video.duration * percent;
+          setCurrentTime(video.currentTime);
+          break;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+
+  const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!videoRef.current || !progressBarRef.current || !duration) return;
+    const rect = progressBarRef.current.getBoundingClientRect();
+    const percent = Math.max(
+      0,
+      Math.min(1, (e.clientX - rect.left) / rect.width)
+    );
+    videoRef.current.currentTime = percent * duration;
+    setCurrentTime(percent * duration);
+  };
+
+  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!videoRef.current) return;
+    const newVolume = parseFloat(e.target.value);
+    videoRef.current.volume = newVolume;
+    setVolume(newVolume);
+    setIsMuted(newVolume === 0);
+  };
+
+  const toggleMute = () => {
+    if (!videoRef.current) return;
+    const newMuted = !isMuted;
+    videoRef.current.muted = newMuted;
+    setIsMuted(newMuted);
+  };
+  const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
+    seekWithClientX(e.clientX);
+  };
+  const seekWithClientX = (clientX: number) => {
+    const bar = progressBarRef.current;
+    const video = videoRef.current;
+    if (!bar || !video || !duration) return;
+    const rect = bar.getBoundingClientRect();
+    const x = Math.min(Math.max(clientX - rect.left, 0), rect.width);
+    const percentage = x / rect.width;
+    const time = percentage * duration;
+    video.currentTime = time;
+    setCurrentTime(time);
+  };
+
+  const changePlaybackRate = (rate: number) => {
+    if (!videoRef.current) return;
+    videoRef.current.playbackRate = rate;
+    setPlaybackRate(rate);
+    setShowSettings(false);
+  };
+  const handleMouseDown = (e: React.MouseEvent) => {
+    isScrubbingRef.current = true;
+    seekWithClientX(e.clientX);
+  };
+
+  const toggleFullscreen = () => {
+    if (!containerRef.current) return;
+    if (!document.fullscreenElement) {
+      containerRef.current.requestFullscreen();
+    } else {
+      document.exitFullscreen();
     }
   };
-  const {isCollapsedDesktop} = useSidebar();
 
-  return (
-    <div className={`flex flex-col min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50`}>
-      <div className="flex-1 overflow-auto">
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-          
-          {/* Hero Section */}
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-            <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12">
-              <button 
-                className="flex items-center gap-2 text-white/80 hover:text-white mb-8 transition-colors" 
-                onClick={() => router.back()}
-              >
-                <ArrowLeft size={20} />
-                Back to Tutorials
-              </button>
+  const handleMouseMove = () => {
+    setShowControls(true);
+    if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+    if (isPlaying) {
+      controlsTimeoutRef.current = setTimeout(
+        () => setShowControls(false),
+        2000
+      );
+    }
+  };
 
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Left Content */}
-                <div className="lg:col-span-2 flex flex-col gap-6">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <span className="px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-sm font-semibold">
-                      {tutorial?.category}
-                    </span>
-                    <span className="px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-sm font-semibold">
-                      {tutorial?.difficulty}
-                    </span>
-                    <span className="px-3 py-1 bg-yellow-400/90 text-yellow-900 rounded-full text-sm font-semibold">
-                      Bestseller
-                    </span>
-                  </div>
+  const formatDuration = (value: number | string) => {
+    if (typeof value === "string") return value;
+    if (isNaN(value)) return "0:00";
+    const h = Math.floor(value / 3600);
+    const m = Math.floor((value % 3600) / 60);
+    const s = Math.floor(value % 60);
+    if (h > 0) {
+      return `${h}:${m.toString().padStart(2, "0")}:${s
+        .toString()
+        .padStart(2, "0")}`;
+    }
+    return `${m}:${s.toString().padStart(2, "0")}`;
+  };
 
-                  <h1 className="text-4xl md:text-5xl font-bold">{tutorial?.title}</h1>
-                  <p className="text-xl text-blue-100">{tutorial?.description}</p>
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
+        <div className="animate-spin h-12 w-12 border-3 border-blue-600 border-t-transparent rounded-full" />
+      </div>
+    );
+  }
 
-                  <div className="flex flex-wrap items-center gap-6">
-                    <div className="flex items-center gap-2">
-                      <Star className="fill-yellow-400 text-yellow-400" size={20} />
-                      <span className="font-bold text-lg">{tutorial?.rating}</span>
-                      <span className="text-blue-100">{tutorial?.reviews.length}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Users size={20} />
-                      <span>{tutorial?.students} students</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Clock size={20} />
-                      <span>{tutorial?.duration}</span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-4 mt-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-gradient-to-br from-pink-400 to-rose-400 rounded-full flex items-center justify-center text-white font-bold">
-                        {tutorial?.instructor.avatar}
-                      </div>
-                      <div>
-                        <div className="font-semibold">Created by {tutorial?.instructor.name}</div>
-                        <div className="text-sm text-blue-100">{tutorial?.instructor.title}</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Right Card - Preview/Enrollment */}
-                <div className="lg:col-span-1">
-                  <div className="bg-white rounded-2xl shadow-2xl overflow-hidden sticky top-8">
-                    <div className={`${tutorial?.thumbnail} h-48 flex items-center justify-center relative group cursor-pointer`}>
-                      <div className="w-16 h-16 bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <Play className="text-white ml-1" size={32} />
-                      </div>
-                      <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm">
-                        Preview
-                      </div>
-                    </div>
-
-                    <div className="p-6">
-                      <div className="flex items-baseline gap-3 mb-6">
-                        <div className="text-4xl font-bold text-gray-900">${tutorial?.price}</div>
-                        <div className="text-xl text-gray-400 line-through">${tutorial?.originalPrice}</div>
-                        <div className="px-2 py-1 bg-green-100 text-green-700 rounded text-sm font-semibold">
-                          50% OFF
-                        </div>
-                      </div>
-
-                      {!isEnrolled ? (
-                        <>
-                          <button
-                            onClick={() => setIsEnrolled(true)}
-                            className="w-full px-6 py-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl font-bold text-lg hover:shadow-xl transition-all mb-3"
-                          >
-                            Enroll Now
-                          </button>
-                          <button className="w-full px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:border-gray-400 transition-colors mb-4">
-                            Add to Cart
-                          </button>
-                        </>
-                      ) : (
-                        <button className="w-full px-6 py-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl font-bold text-lg hover:shadow-xl transition-all mb-4 flex items-center justify-center gap-2">
-                          <CheckCircle size={24} />
-                          Enrolled - Start Learning
-                        </button>
-                      )}
-
-                      <div className="text-center text-sm text-gray-500 mb-4">
-                        30-Day Money-Back Guarantee
-                      </div>
-
-                      <div className="border-t border-gray-200 pt-4 space-y-3">
-                        <div className="flex items-center gap-2 text-sm text-gray-700">
-                          <Video size={16} />
-                          <span>12.5 hours video</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-700">
-                          <Download size={16} />
-                          <span>Downloadable resources</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-700">
-                          <Award size={16} />
-                          <span>Certificate of completion</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-700">
-                          <MessageCircle size={16} />
-                          <span>Q&A support</span>
-                        </div>
-                      </div>
-
-                      <div className="border-t border-gray-200 pt-4 mt-4 flex gap-2">
-                        <button
-                          onClick={() => setIsFavorite(!isFavorite)}
-                          className={`flex-1 px-4 py-2 border-2 rounded-lg font-semibold transition-all ${
-                            isFavorite
-                              ? 'border-red-500 text-red-500 bg-red-50'
-                              : 'border-gray-300 text-gray-700 hover:border-gray-400'
-                          }`}
-                        >
-                          <Heart className={isFavorite ? 'fill-red-500' : ''} size={18} />
-                        </button>
-                        <button className="flex-1 px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:border-gray-400 transition-colors">
-                          <Share2 size={18} />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-              </div>
-            </div>
-          </div>
-
-          {/* Main Content */}
-        
-                            <div className="max-w-7xl mx-auto px-8 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Content - Main Details */}
-          <div className="lg:col-span-2 space-y-8">
-            {/* Tabs */}
-            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-              <div className="flex border-b border-gray-200">
-                {['overview', 'curriculum', 'instructor', 'reviews'].map((tab) => (
-                  <button
-                    key={tab}
-                    onClick={() => setActiveTab(tab)}
-                    className={`flex-1 px-6 py-4 font-semibold capitalize transition-colors ${
-                      activeTab === tab
-                        ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50'
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                    }`}
-                  >
-                    {tab}
-                  </button>
-                ))}
-              </div>
-
-              <div className="p-8">
-                {/* Overview Tab */}
-                {activeTab === 'overview' && (
-                  <div className="space-y-8">
-                    <div>
-                      <h2 className="text-2xl font-bold text-gray-900 mb-4">What you'll learn</h2>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {tutorial?.WhatYouLearn.map((item, idx) => (
-                          <div key={idx} className="flex items-start gap-3">
-                            <CheckCircle className="text-green-500 flex-shrink-0 mt-1" size={20} />
-                            <span className="text-gray-700">{item}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <h2 className="text-2xl font-bold text-gray-900 mb-4">Requirements</h2>
-                      <ul className="space-y-2">
-                        {tutorial?.requirements.map((req, idx) => (
-                          <li key={idx} className="flex items-start gap-3 text-gray-700">
-                            <span className="text-blue-600 mt-1">•</span>
-                            <span>{req}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    <div>
-                      <h2 className="text-2xl font-bold text-gray-900 mb-4">Description</h2>
-                      <p className="text-gray-700 leading-relaxed mb-4">
-                        This comprehensive course covers everything you need to know about React Hooks. 
-                        Whether you're a beginner looking to understand the basics or an experienced developer 
-                        wanting to master advanced patterns, this course has you covered.
-                      </p>
-                      <p className="text-gray-700 leading-relaxed">
-                        You'll build real-world projects, learn best practices, and gain the confidence to use 
-                        React Hooks effectively in your own applications. By the end of this course, you'll be 
-                        able to build complex React applications using modern patterns and techniques.
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {/* Curriculum Tab */}
-                {activeTab === 'curriculum' && (
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between mb-6">
-                      <h2 className="text-2xl font-bold text-gray-900">Course Curriculum</h2>
-                      <div className="text-sm text-gray-600">
-                        {tutorial?.curriculum.length} modules • {tutorial?.curriculum.reduce((acc, m) => acc + m.lessons.length, 0)} lessons
-                      </div>
-                    </div>
-
-                    {tutorial?.curriculum.map((module, moduleIdx) => (
-                      <div key={moduleIdx} className="border-2 border-gray-200 rounded-xl overflow-hidden">
-                        <button
-                          onClick={() => setExpandedModule(expandedModule === moduleIdx ? -1 : moduleIdx)}
-                          className="w-full flex items-center justify-between p-5 bg-gray-50 hover:bg-gray-100 transition-colors"
-                        >
-                          <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center text-white font-bold">
-                              {moduleIdx + 1}
-                            </div>
-                            <div className="text-left">
-                              <div className="font-bold text-gray-900">{module.title}</div>
-                              <div className="text-sm text-gray-600">{module.lessons.length} lessons • {module.duration}</div>
-                            </div>
-                          </div>
-                          {expandedModule === moduleIdx ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                        </button>
-
-                        {expandedModule === moduleIdx && (
-                          <div className="border-t border-gray-200">
-                            {module.lessons.map((lesson, lessonIdx) => (
-                              <div
-                                key={lessonIdx}
-                                className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0"
-                              >
-                                <div className="flex items-center gap-3">
-                                  <div className="text-blue-600">{getTypeIcon(lesson.type)}</div>
-                                  <span className="text-gray-900">{lesson.title}</span>
-                                  {lesson.preview && (
-                                    <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-semibold">
-                                      Preview
-                                    </span>
-                                  )}
-                                </div>
-                                <div className="flex items-center gap-4">
-                                  <span className="text-sm text-gray-600">{lesson.duration}</span>
-                                  {!isEnrolled && !lesson.preview && <Lock size={16} className="text-gray-400" />}
-                                  {(isEnrolled || lesson.preview) && <Play size={16} className="text-blue-600 cursor-pointer" />}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Instructor Tab */}
-                {activeTab === 'instructor' && (
-                  <div>
-                    <h2 className="text-2xl font-bold text-gray-900 mb-6">About the Instructor</h2>
-                    <div className="flex items-start gap-6 mb-8">
-                      <div className="w-24 h-24 bg-gradient-to-br from-pink-400 to-rose-400 rounded-full flex items-center justify-center text-white text-3xl font-bold flex-shrink-0">
-                        {tutorial?.instructor.avatar}
-                      </div>
-                      <div>
-                        <h3 className="text-2xl font-bold text-gray-900 mb-2">{tutorial?.instructor.name}</h3>
-                        <p className="text-gray-600 mb-4">{tutorial?.instructor.title}</p>
-                        <div className="flex flex-wrap gap-6 text-sm">
-                          <div className="flex items-center gap-2">
-                            <Star className="fill-yellow-400 text-yellow-400" size={16} />
-                            <span className="font-semibold">{tutorial?.instructor.rating} Instructor Rating</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Users size={16} />
-                            <span>{tutorial?.instructor.students} Students</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Play size={16} />
-                            <span>{tutorial?.instructor.courses} Courses</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <p className="text-gray-700 leading-relaxed mb-4">
-                      Sarah is a Senior React Developer with over 8 years of experience building web applications. 
-                      She has worked with major tech companies and has a passion for teaching and sharing her knowledge.
-                    </p>
-                    <p className="text-gray-700 leading-relaxed">
-                      Her courses are known for their clarity, practical approach, and real-world examples. 
-                      With over 50,000 students worldwide, Sarah continues to inspire and educate aspiring developers.
-                    </p>
-                  </div>
-                )}
-
-                {/* Reviews Tab */}
-                {activeTab === 'reviews' && (
-                  <div>
-                    <div className="flex items-center justify-between mb-6">
-                      <h2 className="text-2xl font-bold text-gray-900">Student Reviews</h2>
-                      <button className="px-4 py-2 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition-colors">
-                        Write a Review
-                      </button>
-                    </div>
-
-                    <div className="space-y-6">
-                      {tutorial?.reviews.map((review, idx) => (
-                        <div key={idx} className="p-6 bg-gray-50 rounded-xl">
-                          <div className="flex items-start gap-4 mb-4">
-                            <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
-                              {review.avatar}
-                            </div>
-                            <div className="flex-1">
-                              <div className="flex items-center justify-between mb-2">
-                                <div>
-                                  <div className="font-bold text-gray-900">{review.name}</div>
-                                  <div className="text-sm text-gray-500">{review.date}</div>
-                                </div>
-                                <div className="flex items-center gap-1">
-                                  {[...Array(Number(review.rating))].map((_, i) => (
-                                    <Star key={i} className="fill-yellow-400 text-yellow-400" size={16} />
-                                  ))}
-                                </div>
-                              </div>
-                              <p className="text-gray-700 mb-3">{review.comment}</p>
-                              <div className="flex items-center gap-4">
-                                <button className="flex items-center gap-2 text-sm text-gray-600 hover:text-blue-600 transition-colors">
-                                  <ThumbsUp size={16} />
-                                  Helpful ({review.helpful})
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Right Sidebar - Additional Info */}
-          <div className="lg:col-span-1 space-y-6">
-            {/* Course Stats */}
-            <div className="bg-white rounded-2xl shadow-lg p-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Course Details</h3>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between pb-3 border-b border-gray-100">
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <BarChart size={18} />
-                    <span>Skill Level</span>
-                  </div>
-                  <span className="font-semibold text-gray-900">{tutorial?.difficulty}</span>
-                </div>
-                <div className="flex items-center justify-between pb-3 border-b border-gray-100">
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <Users size={18} />
-                    <span>Students</span>
-                  </div>
-                  <span className="font-semibold text-gray-900">{tutorial?.students.toLocaleString()}</span>
-                </div>
-                <div className="flex items-center justify-between pb-3 border-b border-gray-100">
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <Clock size={18} />
-                    <span>Duration</span>
-                  </div>
-                  <span className="font-semibold text-gray-900">{tutorial?.duration}</span>
-                </div>
-                <div className="flex items-center justify-between pb-3 border-b border-gray-100">
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <Calendar size={18} />
-                    <span>Last Updated</span>
-                  </div>
-                  <span className="font-semibold text-gray-900">{tutorial?.lastUpdated}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <Award size={18} />
-                    <span>Certificate</span>
-                  </div>
-                  <span className="font-semibold text-green-600">Yes</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Related Courses */}
-            <div className="bg-white rounded-2xl shadow-lg p-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Related Courses</h3>
-              <div className="space-y-4">
-                {[
-                  { title: 'Advanced TypeScript', price: 39.99, color: 'from-purple-400 to-indigo-500' },
-                  { title: 'Next.js Complete Guide', price: 44.99, color: 'from-green-400 to-emerald-500' },
-                  { title: 'Redux Toolkit Mastery', price: 34.99, color: 'from-orange-400 to-red-500' }
-                ].map((course, idx) => (
-                  <div key={idx} className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer">
-                    <div className={`w-16 h-16 bg-gradient-to-br ${course.color} rounded-xl flex items-center justify-center flex-shrink-0`}>
-                      <Play className="text-white" size={20} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-semibold text-gray-900 text-sm mb-1">{course.title}</div>
-                      <div className="text-blue-600 font-bold">${course.price}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+  if (!currentVideo) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-xl p-12 text-center">
+          <h2 className="text-2xl font-bold text-slate-900 mb-4">
+            Video not found
+          </h2>
+          <button
+            onClick={() => router.push("/tutorials")}
+            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold transition-colors"
+          >
+            Back to tutorials
+          </button>
         </div>
       </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+      {/* Top Navigation */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-lg border-b border-slate-200 px-6 py-4">
+        <div className="max-w-[1920px] mx-auto flex items-center gap-4">
+          <button
+            onClick={() => router.push("/tutorials")}
+            className="p-2 hover:bg-slate-100 rounded-lg transition group"
+          >
+            <ArrowLeft
+              size={20}
+              className="text-slate-600 group-hover:-translate-x-1 transition-transform"
+            />
+          </button>
+          <h1 className="text-lg font-semibold text-slate-900">
+            Back to Tutorials
+          </h1>
+        </div>
+      </header>
+
+      <div className="pt-20 pb-8">
+        <div className="max-w-[1920px] mx-auto flex flex-col lg:flex-row gap-6 px-6">
+          {/* Main Content */}
+          <div className="flex-1 min-w-0">
+            {/* Video Player */}
+            <div
+              ref={containerRef}
+              className="relative bg-black w-full aspect-video rounded-2xl overflow-hidden shadow-2xl"
+              onMouseMove={handleMouseMove}
+              onMouseLeave={() => isPlaying && setShowControls(false)}
+            >
+              <video
+                ref={videoRef}
+                src={currentVideo.videoUrl}
+                preload="metadata"
+                crossOrigin="anonymous"
+                poster={
+                  typeof currentVideo.thumbnailUrl === "string"
+                    ? currentVideo.thumbnailUrl
+                    : undefined
+                }
+                className="w-full h-full cursor-pointer"
+                onClick={togglePlay}
+              />
+
+              {isBuffering && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/40 pointer-events-none">
+                  <div className="animate-spin h-16 w-16 border-4 border-white border-t-transparent rounded-full" />
+                </div>
+              )}
+
+              {/* Play Button Overlay */}
+              {!isPlaying && !isBuffering && (
+                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-t from-black/60 to-transparent pointer-events-none">
+                  <button
+                    onClick={togglePlay}
+                    className="w-20 h-20 bg-white/90 hover:bg-white rounded-full flex items-center justify-center transform hover:scale-110 transition-all shadow-2xl pointer-events-auto"
+                  >
+                    <Play size={32} className="text-blue-600 ml-1" />
+                  </button>
+                </div>
+              )}
+
+              {/* Controls Overlay */}
+              <div
+                className={`absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent transition-opacity duration-300 ${
+                  showControls ? "opacity-100" : "opacity-0"
+                }`}
+                onClick={(e) => e.stopPropagation()}
+                onMouseDown={(e) => e.stopPropagation()}
+              >
+                {/* Progress Bar */}
+                <input
+                  type="range"
+                  min={0}
+                  max={duration || 0}
+                  step={0.1}
+                  value={currentTime}
+                  className="w-full mt-2 cursor-pointer"
+                  onMouseDown={() => (isSeekingRef.current = true)}
+                  onMouseUp={() => (isSeekingRef.current = false)}
+                  onChange={(e) => {
+                    const time = Number(e.target.value);
+                    const video = videoRef.current;
+                    if (!video) return;
+
+                    video.currentTime = time;
+                    setCurrentTime(time);
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                />
+
+                {/* Control Buttons */}
+                <div className="flex items-center justify-between px-4 pb-3">
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={togglePlay}
+                      className="text-white hover:text-blue-400 transition p-1"
+                    >
+                      {isPlaying ? <Pause size={24} /> : <Play size={24} />}
+                    </button>
+
+                    <div className="flex items-center gap-2 group">
+                      <button
+                        onClick={toggleMute}
+                        className="text-white hover:text-blue-400 transition p-1"
+                      >
+                        {isMuted || volume === 0 ? (
+                          <VolumeX size={20} />
+                        ) : (
+                          <Volume2 size={20} />
+                        )}
+                      </button>
+                      <div className="w-0 group-hover:w-20 transition-all overflow-hidden">
+                        <input
+                          type="range"
+                          min="0"
+                          max="1"
+                          step="0.01"
+                          value={isMuted ? 0 : volume}
+                          onChange={handleVolumeChange}
+                          className="w-20"
+                        />
+                      </div>
+                    </div>
+
+                    <span className="text-sm text-white font-medium">
+                      {formatDuration(currentTime)} / {formatDuration(duration)}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <div className="relative" ref={settingsRef}>
+                      <button
+                        onClick={() => setShowSettings(!showSettings)}
+                        className="text-white hover:text-blue-400 transition p-1"
+                      >
+                        <Settings size={20} />
+                      </button>
+                      {showSettings && (
+                        <div className="absolute bottom-full right-0 mb-2 bg-slate-900 rounded-xl shadow-2xl py-2 min-w-[140px]">
+                          <div className="px-4 py-2 text-xs text-slate-400">
+                            Playback speed
+                          </div>
+                          {[0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2].map(
+                            (rate) => (
+                              <button
+                                key={rate}
+                                onClick={() => changePlaybackRate(rate)}
+                                className={`w-full text-left px-4 py-2 hover:bg-slate-800 text-sm transition ${
+                                  playbackRate === rate
+                                    ? "text-blue-400 bg-slate-800"
+                                    : "text-white"
+                                }`}
+                              >
+                                {rate === 1 ? "Normal" : `${rate}x`}
+                              </button>
+                            )
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    <button
+                      onClick={toggleFullscreen}
+                      className="text-white hover:text-blue-400 transition p-1"
+                    >
+                      <Maximize size={20} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Video Info */}
+            <div className="mt-6 bg-white rounded-2xl shadow-lg p-6">
+              <h1 className="text-2xl font-bold text-slate-900 mb-3">
+                {currentVideo.title}
+              </h1>
+
+              <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
+                <div className="flex items-center gap-4 text-sm text-slate-600">
+                  <span className="flex items-center gap-1.5">
+                    <Clock size={16} />
+                    {formatDuration(currentVideo.duration)}
+                  </span>
+                  {currentVideo.rating && (
+                    <span className="flex items-center gap-1.5">
+                      <Star
+                        size={16}
+                        className="text-yellow-400 fill-yellow-400"
+                      />
+                      {currentVideo.rating}
+                    </span>
+                  )}
+                  {watchedPercentage >= 90 && (
+                    <span className="flex items-center gap-1.5 text-green-600 font-medium">
+                      <CheckCircle size={16} />
+                      Completed
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2 flex-wrap">
+                  <div className="flex items-center bg-slate-100 rounded-xl overflow-hidden">
+                    <button className="px-4 py-2 hover:bg-slate-200 transition flex items-center gap-2">
+                      <ThumbsUp size={18} className="text-slate-700" />
+                      <span className="text-sm font-medium text-slate-900">
+                        Like
+                      </span>
+                    </button>
+                    <div className="w-px h-6 bg-slate-300" />
+                    <button className="px-4 py-2 hover:bg-slate-200 transition">
+                      <ThumbsDown size={18} className="text-slate-700" />
+                    </button>
+                  </div>
+
+                  <button className="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl transition flex items-center gap-2">
+                    <Share2 size={18} className="text-slate-700" />
+                    <span className="text-sm font-medium text-slate-900">
+                      Share
+                    </span>
+                  </button>
+
+                  <button className="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl transition flex items-center gap-2">
+                    <Download size={18} className="text-slate-700" />
+                    <span className="text-sm font-medium text-slate-900">
+                      Download
+                    </span>
+                  </button>
+
+                  <button className="p-2 bg-slate-100 hover:bg-slate-200 rounded-xl transition">
+                    <MoreHorizontal size={18} className="text-slate-700" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Description */}
+              <div className="bg-slate-50 rounded-xl p-4">
+                <div
+                  className={`text-sm text-slate-700 leading-relaxed ${
+                    showDescription ? "" : "line-clamp-2"
+                  }`}
+                >
+                  {currentVideo.description || "No description available."}
+                </div>
+                {currentVideo.description &&
+                  currentVideo.description.length > 100 && (
+                    <button
+                      onClick={() => setShowDescription(!showDescription)}
+                      className="text-sm font-semibold text-blue-600 hover:text-blue-700 mt-2 flex items-center gap-1"
+                    >
+                      {showDescription ? "Show less" : "Show more"}
+                      <ChevronDown
+                        size={16}
+                        className={`transition-transform ${
+                          showDescription ? "rotate-180" : ""
+                        }`}
+                      />
+                    </button>
+                  )}
+              </div>
+
+              {/* Progress Bar */}
+              <div className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-slate-700">
+                    Watch Progress
+                  </span>
+                  <span className="text-sm font-bold text-blue-600">
+                    {Math.round(watchedPercentage)}%
+                  </span>
+                </div>
+                <div className="h-2 bg-white/60 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-blue-600 rounded-full transition-all duration-500"
+                    style={{ width: `${watchedPercentage}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Sidebar - Related Videos */}
+          <aside className="lg:w-[400px] xl:w-[420px]">
+            <div className="bg-white rounded-2xl shadow-lg p-5">
+              <h3 className="font-bold text-lg text-slate-900 mb-4">Up Next</h3>
+              <div className="space-y-3">
+                {tutorialVideos
+                  ?.filter((v: any) => v.id !== videoId)
+                  .slice(0, 10)
+                  .map((video: any) => (
+                    <div
+                      key={video.id}
+                      onClick={() => router.push(`/tutorials/${video.id}`)}
+                      className="flex gap-3 cursor-pointer hover:bg-slate-50 rounded-xl p-2 transition group"
+                    >
+                      <div className="relative w-40 h-24 flex-shrink-0 rounded-lg overflow-hidden bg-slate-200 shadow-md">
+                        {video.thumbnailUrl ? (
+                          <Image
+                            src={video.thumbnailUrl}
+                            alt={video.title}
+                            fill
+                            className="object-cover group-hover:scale-105 transition-transform duration-300"
+                            sizes="160px"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <Play className="text-slate-400" size={24} />
+                          </div>
+                        )}
+                        <div className="absolute bottom-1 right-1 bg-black/80 text-white text-xs px-1.5 py-0.5 rounded font-medium">
+                          {formatDuration(video.duration)}
+                        </div>
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-sm text-slate-900 line-clamp-2 mb-1 group-hover:text-blue-600 transition">
+                          {video.title}
+                        </h3>
+                        <div className="flex items-center gap-2 text-xs text-slate-500">
+                          {video.rating && (
+                            <div className="flex items-center gap-1">
+                              <Star
+                                size={12}
+                                className="text-yellow-400 fill-yellow-400"
+                              />
+                              <span>{video.rating}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          </aside>
         </div>
       </div>
     </div>
   );
 }
+
+export default VideoPlayerPage;
