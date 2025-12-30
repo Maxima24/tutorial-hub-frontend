@@ -8,9 +8,9 @@ function page() {
   const {isCollapsedDesktop} = useMiniSidebar();
     
   return (
-     <div className={`flex flex-col min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 `}>
-        <div className=" "></div>
-        <MiniSidebar/>
+     <div className={`flex w-full flex-row min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 `}>
+        
+        {/* <MiniSidebar/> */}
             {currentPage === 'settings' && (
           <div className="p-8">
             {/* Header */}
@@ -19,12 +19,12 @@ function page() {
               <p className="text-gray-600">Manage your account and preferences</p>
             </div>
 
-            <div className="">
+            <div className="max-w-screen flex ">
               {/* Settings Navigation */}
              <MiniSidebar/>
 
               {/* Settings Content */}
-              <div className="lg:col-span-2 space-y-6">
+              <div className=" ml-4 w-full flex-1 lg:col-span-2 space-y-6">
                 {/* Profile Settings */}
                 <div className="bg-white rounded-2xl shadow shadow-blue-200/80 p-6">
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Profile Information</h2>

@@ -1,25 +1,39 @@
 "use client"
-import { FormErrors } from "@/interfaces/authInterface";
+import { FormErrors, NameObject } from "@/interfaces/authInterface";
 import validateSignup from "@/lib/config/validate-signup";
+import { signUp } from "@/service/authServices/signup";
+import { useUserStore } from "@/store/auth-store";
+import axios from "axios";
 import { Eye, EyeOff, Lock, Mail, User } from "lucide-react"
 import Link from "next/link"
+import { useRouter } from "next/navigation";
+
 import React, { useEffect } from "react";
 import { useState } from "react";
 
 type InputChangeEvent = React.ChangeEvent<HTMLInputElement>;
 
 function Page() {
+  const router = useRouter()
   const[isMounted,setIsMounted] = React.useState<boolean |null>(null)
+  
     const [isLoading, setIsLoading] = useState(false);
+    const [pwdCheckerObj,setPwdChecker] = React.useState<Record<string,string>>({
+      password:"",
+      confirmPassword:""
+    })
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [errors, setErrors] = useState<FormErrors>({});
+    const [nameObject,setNameObject] = useState<NameObject>({
+      firstName:"",
+      lastName:""
+    })
     const [payload, setPayload] = useState({
-      firstName: "",
-      lastName: "",
+     name:"",
       email: "",
       password: "",
-      confirmPassword: "",
+      
     });
     useEffect(()=>{setIsMounted(true)},[])
 
@@ -30,31 +44,85 @@ function Page() {
         [name]: value,
       }));
     }
-
+    function handlePwdChange(e:InputChangeEvent){
+      const {name,value}  = e.target
+      setPwdChecker((prev)=>({
+        ...prev,[name]:value
+      }))
+    }
+    function pwdConfirm(p1:string,p2:string){
+      if(p1 !== p2){
+        console.log("Password must be the same")
+      }else return p1
+    }
+    function handleNameChange(e:InputChangeEvent){
+        const {name,value} = e.target
+        setNameObject((prev)=>({
+          ...prev,
+          [name]:value
+        }))
+    }
+    function mergeName(firstName:string,lastName:string){
+      const name = firstName + " " + lastName
+      return name
+    }
     const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
       setIsLoading(true);
   
       try {
-        const validationErrors = validateSignup(payload);
-        if (payload.password !== payload.confirmPassword) {
-          validationErrors.confirmPassword = "Passwords do not match";
+        const {firstName,lastName} = nameObject
+        const {password,confirmPassword} = pwdCheckerObj
+        const name  = mergeName(firstName,lastName)
+        const confirmedPwd = pwdConfirm(password,confirmPassword)
+        if(!confirmedPwd) throw new Error("password mismatch")
+        setPayload((prev)=>({
+            ...prev,
+            name,
+            password:confirmedPwd
+        }))
+        const newPayload = {
+          ...payload,
+          name,
+          password:confirmedPwd
         }
-  
-        setErrors(validationErrors);
+        console.log(payload)
+        const validationErrors = validateSignup(newPayload,nameObject)  
+         setErrors(validationErrors);
+     
   
         if (Object.keys(validationErrors).length === 0) {
           console.log(" Form submitted:", payload);
   
         }
+
+         const {user,token:access_token} = await signUp(newPayload)
+         console.log("sign up response", {user,access_token})
+         useUserStore.getState().setUser(user, access_token);
+                alert(" 😊Sign up Successful")
+         router.push('/verify-email')
       } catch (err) {
+        if (axios.isAxiosError(err)){
+          console.log("Axios Error",err.message )
+          console.log("Axios error response",err.response?.data)
+          console.log("status",err.response?.status )
+
+        }
         console.error("Signup error:", err);
-        alert(err)
+     
       } finally {
         setIsLoading(false);
       }
     };
+      useEffect(()=>{
+      console.log(pwdCheckerObj)
+      const {password,confirmPassword} = pwdCheckerObj
+      const CON = pwdConfirm(password,confirmPassword)
+      console.log(CON)
+    },[pwdCheckerObj])
+  
     if(isMounted){
+      
          return (
     <div className="flex min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
 
@@ -75,8 +143,8 @@ function Page() {
                   <input
                     type="text"
                     name="firstName"
-                    value={payload.firstName}
-                    onChange={handleOnChange}
+                    value={nameObject.firstName}
+                    onChange={handleNameChange}
                     placeholder="First name"
                     className="h-12 pl-12 pr-4 rounded-xl outline-none border-2 border-gray-200 focus:border-blue-600 focus:ring-0 transition-all duration-200 bg-white/50 backdrop-blur-sm md:w-[220px] w-full"
                     maxLength={30}
@@ -94,8 +162,8 @@ function Page() {
                   <input
                     type="text"
                     name="lastName"
-                    value={payload.lastName}
-                    onChange={handleOnChange}
+                    value={nameObject.lastName}
+                    onChange={handleNameChange}
                     placeholder="Last name"
                     className="h-12 pl-12 pr-4 rounded-xl outline-none border-2 border-gray-200 focus:border-blue-600 focus:ring-0 transition-all duration-200 bg-white/50 backdrop-blur-sm md:w-[220px] w-full"
                     maxLength={30}
@@ -131,8 +199,8 @@ function Page() {
                 <input
                   type={showPassword ? "text" : "password"}
                   name="password"
-                  value={payload.password}
-                  onChange={handleOnChange}
+                  value={pwdCheckerObj.password}
+                  onChange={handlePwdChange}
                   placeholder="Create a password"
                   className="h-12 pl-12 pr-12 rounded-xl outline-none border-2 border-gray-200 focus:border-blue-600 focus:ring-0 transition-all duration-200 bg-white/50 backdrop-blur-sm w-full"
                   autoComplete="new-password"
@@ -154,8 +222,8 @@ function Page() {
                 <input
                   type={showConfirmPassword ? "text" : "password"}
                   name="confirmPassword"
-                  value={payload.confirmPassword}
-                  onChange={handleOnChange}
+                  value={pwdCheckerObj.confirmPassword}
+                  onChange={handlePwdChange}
                   placeholder="Confirm your password"
                   className="h-12 pl-12 pr-12 rounded-xl outline-none border-2 border-gray-200 focus:border-blue-600 focus:ring-0 transition-all duration-200 bg-white/50 backdrop-blur-sm w-full"
                   autoComplete="new-password"

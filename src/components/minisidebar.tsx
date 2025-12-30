@@ -26,7 +26,7 @@ export const MiniSidebar = () => {
 
   return (
     <div className="lg:col-span-1">
-      <div className="bg-white rounded-2xl shadow p-4 space-y-2 sticky top-8">
+      <div className="bg-white  rounded-2xl shadow p-4 space-y-2  ">
         {navItems.map((item, idx) => {
           const Icon = item.icon;
        
