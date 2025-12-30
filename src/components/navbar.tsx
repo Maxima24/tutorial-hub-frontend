@@ -1,3 +1,4 @@
+'use client'
 import React from "react"
 
 import { useSidebar } from "@/contexts/sideBarContext"
@@ -5,15 +6,36 @@ import { getPageConfig, PageConfig } from "@/lib/config/dashboard-config"
 import { ArrowLeft, ChevronRight, Moon } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useUserStore } from "@/store/auth-store";
 
 
 export const Navbar  = ({title, icon: Icon, parent}: PageConfig) =>{
+    const [isMounted,setIsMounted] = React.useState<boolean>()
+    const [isLoading,setIsLoading] = React.useState<boolean>(false)
+    const clearUser = useUserStore((state)=>state.clearUser)
     const [scrolled,setScrolled] = React.useState<boolean>(false)
+     const user = useUserStore((state)=>state.user) 
     const {isCollapsedDesktop} = useSidebar();
     const router = useRouter();
     const pathname = usePathname();
     const currentPage = getPageConfig(pathname);
     const parentPage = currentPage.parent ? getPageConfig(currentPage.parent) : null;
+     function handleSignout(){
+        setIsLoading(true)
+          try{
+            clearUser()
+               localStorage.removeItem("token");
+               localStorage.removeItem('user-storage')
+               router.push("/signin")
+          }catch(error){
+            throw error
+          }finally{
+            setIsLoading(false)
+          }
+      }
+    React.useEffect(()=>{
+        setIsMounted(true)
+    },[])
     React.useEffect(()=>{
         const handleScroll =()=>{
              setScrolled(window.scrollY > 50)
@@ -21,6 +43,7 @@ export const Navbar  = ({title, icon: Icon, parent}: PageConfig) =>{
        window.addEventListener("scroll",handleScroll)
        return ()=>window.removeEventListener("scroll",handleScroll)
     },[])
+    if(!isMounted) return null
 
     return(
         <div className= {`top-0 z-[1000]  sticky lg:px-8 px-2 py-6 shadow bg-white   ${isCollapsedDesktop ? "lg:ml-[70px]" : "lg:ml-[250px]"} ${scrolled?"bg-white/20 backdrop-blur-md shadow-md":"bg-white"}`}>
@@ -49,7 +72,8 @@ export const Navbar  = ({title, icon: Icon, parent}: PageConfig) =>{
                 <div className="text-blue-600">
                     <Moon/>
                 </div>
-                <button onClick={() => router.push("/signup")} className="cursor-pointer">Sign up</button>
+              { !user? <button onClick={() => router.push("/signup")} className="cursor-pointer">Sign up</button> :
+              <button onClick={() => handleSignout()} className="cursor-pointer hover:text-blue-500 hover:shadow-2xl hover:shadow-black">Sign out</button>}
             </div>
             </div>
         </div>

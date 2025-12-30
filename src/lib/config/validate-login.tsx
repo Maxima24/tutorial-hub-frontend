@@ -2,7 +2,7 @@ import {  LoginData, LoginErrors } from "@/interfaces/authInterface";
 
 
 
-function validateLogin(payload: LoginData): LoginErrors {
+function validateLogin(payload: LoginData,): LoginErrors {
     const newErrors: LoginErrors = {};
   
     if (!payload.email.trim()) {

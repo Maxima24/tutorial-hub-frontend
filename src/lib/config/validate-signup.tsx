@@ -1,18 +1,20 @@
 
-import { FormErrors, FormData } from "@/interfaces/authInterface";
+import { FormErrors, FormData, NameObject } from "@/interfaces/authInterface";
 
-export default function validateSignup(payload: FormData): FormErrors {
+export default function validateSignup(payload: FormData,nameObject:NameObject): FormErrors {
   const newErrors: FormErrors = {};
 
-  if (!payload.firstName.trim()) {
+  if (!nameObject.firstName.trim()) {
     newErrors.firstName = "First name is required";
   }else{
     
   }
-  if (!payload.lastName.trim()) {
+  if (!nameObject.lastName.trim()) {
     newErrors.lastName = "Last name is required";
   }
-
+  if(!payload.name.trim()){
+    newErrors.name ="name is required"
+  }
   if (!payload.email.trim()) {
     newErrors.email = "Email is required";
   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email)) {
