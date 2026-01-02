@@ -1,6 +1,14 @@
-import { useEffect, useState, useCallback } from 'react';
-import { io, Socket } from 'socket.io-client';
-import { useUserStore } from '@/store/auth-store';
+// hooks/useMessaging.ts
+"use client";
+
+import { useEffect, useCallback } from "react";
+import { io, Socket } from "socket.io-client";
+import { useUserStore } from "@/store/auth-store";
+import { useMessagesStore } from "@/store/message-store";
+import { api } from "@/service/api";
+import { join } from "path";
+
+let socket: Socket | null = null;
 
 interface Message {
   id: string;
@@ -11,78 +19,124 @@ interface Message {
 }
 
 interface SendMessagePayload {
-  senderId: string;
+  isGroup: boolean;
   content: string;
-  recieverId: string;
+  reciepientId: string;
 }
 
 export function useMessaging() {
-  const [socket, setSocket] = useState<Socket | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [isConnected, setIsConnected] = useState(false);
-  const token = useUserStore.getState().token;
+  const token = useUserStore((s) => s.token);
+  const user = useUserStore((s) => s.user);
+  const addMessage = useMessagesStore((s) => s.addMessage);
+  const setChats = useMessagesStore((s) => s.setChats);
+  const setMessages = useMessagesStore((s) => s.hydrateConversations); // Assuming you have this
+  const hydrateConversations = useMessagesStore((s) => s.hydrateConversations);
 
-  // Initialize socket connection
+  // ✅ Initialize socket once per token
   useEffect(() => {
-    if (!token) {
-      console.log('No token available');
-      return;
-    }
+    if (!token || socket) return;
 
-    const newSocket = io('http://localhost:3002', {
-      auth: {
-        token: token,
-      },
+    console.log("🚀 Initializing socket connection");
+
+    socket = io("http://localhost:8000", {
+      auth: { token },
+      autoConnect: true,
       reconnection: true,
       reconnectionDelay: 1000,
-      reconnectionDelayMax: 5000,
       reconnectionAttempts: 5,
+      transports: ["websocket", "polling"],
     });
 
-    newSocket.on('connect', () => {
-      console.log('Connected to WebSocket');
-      setIsConnected(true);
+    // Connection events
+    socket.on("connect", () => {
+      console.log("✅ Socket connected:", socket?.id);
+
+      // IIFE to handle async
+      (async () => {
+        try {
+          const userChatData = await getChat();
+          console.log("this is the user chats", userChatData);
+
+          // now pass the real array to the store
+          setChats(userChatData, user?.id!);
+        } catch (err) {
+          console.error("Failed to fetch user chats:", err);
+        }
+      })();
     });
 
-    newSocket.on('disconnect', () => {
-      console.log('Disconnected from WebSocket');
-      setIsConnected(false);
+    socket.on("connect_error", (err) => {
+      console.error("❌ Socket connection error:", err);
     });
 
-    newSocket.on('receiveMessage', (message: Message) => {
-      console.log('Message received:', message);
-      setMessages((prev) => [...prev, message]);
+    socket.on("receiveMessage", (message: Message) => {
+      console.log("📨 Received message:", message);
+      addMessage(message);
     });
 
-    newSocket.on('connect_error', (error) => {
-      console.error('Connection error:', error);
-    });
-
-    setSocket(newSocket);
-
+    // Clean up only if token changes / user logs out
     return () => {
-      newSocket.disconnect();
+      console.log("🧹 Cleaning up socket");
+      socket?.off();
+      socket?.disconnect();
+      socket = null;
     };
-  }, [token]);
+  }, [token, addMessage, hydrateConversations]);
 
+  // ✅ Fetch messages for a specific conversation
+  const fetchMessages = useCallback((otherUserId: string) => {
+    if (!socket || !socket.connected) {
+      return Promise.reject(new Error("Socket not connected"));
+    }
+
+    return new Promise<Message[]>((resolve, reject) => {
+      socket!.emit("getMessages", { otherUserId }, (response: any) => {
+        if (response?.status === "error") {
+          reject(new Error(response.message));
+        } else {
+          console.log("📬 Messages received:", response.messages?.length);
+          resolve(response.messages || []);
+        }
+      });
+    });
+  }, []);
+  const getChat = useCallback(async () => {
+    const { data } = await api.get("/chats/getChats", {
+      params: {
+        userId: user?.id,
+      },
+    });
+    console.log(data);
+    return data;
+  }, [token, socket]);
+
+  // ✅ Send a message safely
   const sendMessage = useCallback(
     (payload: SendMessagePayload) => {
-      if (!socket || !isConnected) {
-        console.error('Socket not connected');
-        return;
+      if (!socket || !socket.connected) {
+        return Promise.reject(new Error("Socket not connected"));
       }
 
-      socket.emit('sendMessage', payload, (response: any) => {
-        console.error('Server response:', response);
+      return new Promise((resolve, reject) => {
+        console.log(payload);
+        socket!.emit("sendMessage", payload, (response: any) => {
+          if (response?.error || response?.status === "error") {
+            reject(new Error(response.error || response.message));
+          } else {
+            if (response?.message) addMessage(response.message);
+            resolve(response);
+          }
+        });
       });
     },
-    [socket, isConnected]
+    [addMessage]
   );
 
   return {
     socket,
-    messages,
-    isConnected,
     sendMessage,
+    fetchMessages,
+    getChat, // Export this new function
+    isConnected: socket?.connected ?? false,
   };
 }

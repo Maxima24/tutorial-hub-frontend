@@ -49,9 +49,10 @@ const LoginPage = () => {
       if (Object.keys(validationErrors).length === 0) {
         console.log(" Form submitted:", payload);
       }
-      const { safeUser: user, token: access_token } = await login(payload);
+      const { safeUser: user,token } = await login(payload);
+
       console.log(user, "Here is the USer data");
-      useUserStore.getState().setUser(user, access_token);
+      useUserStore.getState().setUser(user,token);
       console.log("Login Successfull Successful");
       router.push("/home");
     } catch (err) {

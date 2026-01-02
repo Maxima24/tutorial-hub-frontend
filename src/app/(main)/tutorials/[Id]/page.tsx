@@ -22,13 +22,18 @@ import {
   Star,
 } from "lucide-react";
 import { useGetVideos } from "@/service/query/vides.query";
+import { useMessaging } from "@/hooks/useMessaging";
+import { useUserStore } from "@/store/auth-store";
 
 function VideoPlayerPage() {
+  const { socket, isConnected, sendMessage } = useMessaging();
   const params = useParams();
   const router = useRouter();
   const videoId = params.id as string;
-
+  const [isMoreOptionsOpen, setIsMoreOptionsOpen] = useState<boolean>(false);
+  const userId = useUserStore((state) => state.user?.id);
   const { data: tutorialVideos, isLoading } = useGetVideos();
+
   const [currentVideo, setCurrentVideo] = useState<any>(null);
 
   // Player state
@@ -58,6 +63,10 @@ function VideoPlayerPage() {
       setCurrentVideo(video ?? null);
     }
   }, [tutorialVideos, videoId]);
+
+  useEffect(() => {
+    console.log(currentVideo);
+  }, [currentVideo]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -272,6 +281,41 @@ function VideoPlayerPage() {
     );
     videoRef.current.currentTime = percent * duration;
     setCurrentTime(percent * duration);
+  };
+  const handleOption = async (option: string) => {
+    switch (option.toLowerCase()) {
+      case "message user": {
+        if (!userId) {
+          console.error("User must be logged in to send a message");
+          return;
+        }
+        console.log("socket instance:", socket);
+        console.log("connected:", socket?.connected);
+
+        if (!isConnected) {
+          console.error("Socket not connected");
+          socket?.connect();
+          return;
+        }
+        if (userId === currentVideo.userId) {
+          console.warn("User cant send a message to one's self");
+          return;
+        }
+
+        const payload = {
+          isGroup: false,
+          content: "Hi I love your video content!!",
+          reciepientId: currentVideo.userId,
+        };
+
+
+        await sendMessage(payload);
+        return;
+      }
+
+      default:
+        console.warn("Unknown option:", option);
+    }
   };
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -605,9 +649,33 @@ function VideoPlayerPage() {
                     </span>
                   </button>
 
-                  <button className="p-2 bg-slate-100 hover:bg-slate-200 rounded-xl transition">
-                    <MoreHorizontal size={18} className="text-slate-700" />
+                  <button
+                    className="p-2  bg-slate-100 hover:bg-slate-200 rounded-xl transition"
+                    onClick={() => setIsMoreOptionsOpen(!isMoreOptionsOpen)}
+                  >
+                    <MoreHorizontal
+                      size={18}
+                      className="text-slate-700 relative"
+                    />
                   </button>
+
+                  {isMoreOptionsOpen && (
+                    <div className="absolute flex 1flex-col gap-2 right-80 bg-gray-100 border-1  rounded-lg px-2 border-b-1 border-blue-200 py-4">
+                      <ul>
+                        {["Message User", "kill user"].map((item, index) => {
+                          return (
+                            <li
+                              key={index}
+                              className="text-blue-400 py-1 border-b-1 border-gray-300 last:border-b-0 hover:text-blue-500 hover:cursor-pointer"
+                              onClick={() => handleOption(item)}
+                            >
+                              {item}
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+                  )}
                 </div>
               </div>
 
