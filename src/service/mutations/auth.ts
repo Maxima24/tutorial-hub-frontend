@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { api } from "../api";
 import { FormData } from "./../../interfaces/authInterface";
 
@@ -9,9 +9,9 @@ export const useLogin = () => {
       const { data } = await api.post("/auth/login", payload);
       if (!data) throw new Error("Login attempt failed");
       console.log("Login response data:", data);
-      const { safeUser, accesstoken } = data;
-      localStorage.setItem("token", accesstoken);
-      return { safeUser, token: accesstoken };
+      const { safeUser, access_token } = data;
+      localStorage.setItem("token", access_token);
+      return { safeUser, token: access_token };
     },
   });
 };
@@ -35,8 +35,24 @@ export const useGetUser = () => {
       const { data } = await api.get("/auth/me");
       if (!data) throw new Error("Fetch user failed");
       console.log("Get User response data:", data.data);
-      const { safeUser, accesstoken } = data.data;
-      localStorage.setItem("token", accesstoken);
+      const { safeUser, access_token } = data.data;
+      localStorage.setItem("token", access_token);
     },
+  });
+};
+export const useGetUserDetails = (userId:string) => {
+  return useQuery({
+    queryKey: ["getUserDetails"],
+    queryFn: async () => {
+      const { data } = await api.get("/auth/get-user-details", {
+        params: {
+          userId,
+        },
+      });
+      if (!data) throw new Error("Fetch for user data failed");
+      const { safeUser: user } = data.data;
+      console.log(user);
+    },
+    enabled:!!userId
   });
 };

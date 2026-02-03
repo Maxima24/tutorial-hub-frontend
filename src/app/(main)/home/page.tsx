@@ -112,12 +112,12 @@ const LearningPlatform = () => {
 
   return (
     <div
-      className={`flex flex-col min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 `}
+      className={`flex flex-col h-[110vh] mt-4 rounded-lg p-2  `}
     >
       <div className=" ">
-        <div className="flex-1 overflow-auto">
+        <div className="flex-1 overflow-auto ">
           {currentPage === "dashboard" && (
-            <div className="lg:p-8 p-4">
+            <div className="mt-4 ">
               {/* Header with Time Greeting */}
               <div className="mb-8">
                 <div className="flex items-center justify-between">
@@ -196,7 +196,7 @@ const LearningPlatform = () => {
               </div>
 
               {/* Continue Learning */}
-              <div className=" gap-6 mb-8">
+              <div className=" gap-6 mb-8 h-fit">
                 <div className=" bg-white rounded-2xl shadow pt-6">
                   <div className="flex items-center justify-between mb-6  px-6">
                     <div>
@@ -211,7 +211,7 @@ const LearningPlatform = () => {
                       View All <ChevronRight size={18} />
                     </button>
                   </div>
-                  <div className="flex overflow-x-auto scrollbar-hide gap-4 w-full pb-6  px-6">
+                  <div className="flex overflow-x-hidden h-contain scrollbar-hide gap-4 w-full pb-6  px-6">
                     {recentCourses.map((course, idx) => (
                       <div
                         key={idx}
