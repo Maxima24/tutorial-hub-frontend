@@ -1,11 +1,9 @@
 "use client"
 
-import Image from "next/image";
+import LandingPage from "@/components/landingPageComponents/LandingPage";
 
 export default function Home() {
   return (
-    <div>
-      hi
-    </div>
+    <LandingPage/>
   );
 }

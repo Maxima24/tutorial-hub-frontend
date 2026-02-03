@@ -59,7 +59,7 @@ function VideoPlayerPage() {
 
   useEffect(() => {
     if (tutorialVideos && videoId) {
-      const video = tutorialVideos.find((v: any) => v.id === videoId);
+      const video = tutorialVideos?.find((v: any) => v.id === videoId);
       setCurrentVideo(video ?? null);
     }
   }, [tutorialVideos, videoId]);

@@ -26,15 +26,18 @@ export default function RootLayout({
   return (
     
       <main >
-        <div className="flex w-full ">
-           <Sidebar/> 
+        <div className="bg-white  flex w-full ">
+          <div className="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 mr-5 ml-5 mt-2 mb-20 item-center justify-center ">
+               <Sidebar/> 
+
+          </div>
           {/**main content */}
-          <div  className="w-full flex-1 flex flex-col ">
-            <Navbar
+          <div  className="w-[80vh] h-[80vh] flex-1 flex flex-col ">
+            {/* <Navbar
              title={currentPageConfig.title} 
              icon={currentPageConfig.icon} 
-            />
-           <div className={`flex flex-col min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50  ${isCollapsedDesktop ? "lg:ml-[70px]" : "lg:ml-[250px]"}`}>
+            /> */}
+           <div className={`  flex flex-col  w-contain h-contain bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50  ${isCollapsedDesktop ? "lg:ml-[70px]" : "lg:ml-[250px]"}`}>
             {children}
            </div>
           </div>

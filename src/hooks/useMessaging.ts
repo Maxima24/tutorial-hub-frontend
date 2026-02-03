@@ -7,6 +7,7 @@ import { useUserStore } from "@/store/auth-store";
 import { useMessagesStore } from "@/store/message-store";
 import { api } from "@/service/api";
 import { join } from "path";
+import { useChatStore } from "@/store/chat-store";
 
 let socket: Socket | null = null;
 
@@ -20,68 +21,68 @@ interface Message {
 
 interface SendMessagePayload {
   isGroup: boolean;
-  content: string;
-  reciepientId: string;
+  reciepientId:string
+  content:string
+  
 }
 
 export function useMessaging() {
   const token = useUserStore((s) => s.token);
-  const user = useUserStore((s) => s.user);
-  const addMessage = useMessagesStore((s) => s.addMessage);
-  const setChats = useMessagesStore((s) => s.setChats);
-  const setMessages = useMessagesStore((s) => s.hydrateConversations); // Assuming you have this
-  const hydrateConversations = useMessagesStore((s) => s.hydrateConversations);
+  const user = useUserStore((s) => s.user); 
+  const setChats = useChatStore((s) => s.setChats);
+  const appendMessage = useChatStore((s)=>s.appendMessage)
 
   // ✅ Initialize socket once per token
+  const getChat = useCallback(async () => {
+  if (!user?.id) return [];
+
+  try {
+    const { data } = await api.get("/chats/getChats", {
+      params: { userId: user.id },
+    });
+
+    console.log("API data:", data);
+
+    // If API returns { chats: [...] }
+    const chatsArray = data.chats || data; // depends on your API
+    setChats(chatsArray);
+
+    return chatsArray;
+  } catch (err) {
+    console.error("Failed to fetch chats", err);
+    return [];
+  }
+}, [user?.id, setChats]);
   useEffect(() => {
-    if (!token || socket) return;
+  if (!token || !user?.id || socket) return;
 
-    console.log("🚀 Initializing socket connection");
+  console.log("🚀 Initializing socket connection");
 
-    socket = io("http://localhost:8000", {
-      auth: { token },
-      autoConnect: true,
-      reconnection: true,
-      reconnectionDelay: 1000,
-      reconnectionAttempts: 5,
-      transports: ["websocket", "polling"],
-    });
+  socket = io(process.env.NEXT_PUBLIC_API_URL, {
+    auth: { token },
+    autoConnect: true,
+    transports: ["websocket", "polling"],
+  });
 
-    // Connection events
-    socket.on("connect", () => {
-      console.log("✅ Socket connected:", socket?.id);
+  socket.on("connect", async () => {
+    console.log("✅ Socket connected:", socket?.id);
 
-      // IIFE to handle async
-      (async () => {
-        try {
-          const userChatData = await getChat();
-          console.log("this is the user chats", userChatData);
+    const userChatData = await getChat(); // this now correctly fetches
+    console.log("User chats:", userChatData);
+  });
 
-          // now pass the real array to the store
-          setChats(userChatData, user?.id!);
-        } catch (err) {
-          console.error("Failed to fetch user chats:", err);
-        }
-      })();
-    });
+  socket.on("receiveMessage", (message:any) => {
+    console.log("📨 Received message:", message);
+    appendMessage(message);
+  });
 
-    socket.on("connect_error", (err) => {
-      console.error("❌ Socket connection error:", err);
-    });
-
-    socket.on("receiveMessage", (message: Message) => {
-      console.log("📨 Received message:", message);
-      addMessage(message);
-    });
-
-    // Clean up only if token changes / user logs out
-    return () => {
-      console.log("🧹 Cleaning up socket");
-      socket?.off();
-      socket?.disconnect();
-      socket = null;
-    };
-  }, [token, addMessage, hydrateConversations]);
+  return () => {
+    console.log("🧹 Cleaning up socket");
+    socket?.off();
+    socket?.disconnect();
+    socket = null;
+  };
+}, [token, user?.id, getChat, appendMessage]);
 
   // ✅ Fetch messages for a specific conversation
   const fetchMessages = useCallback((otherUserId: string) => {
@@ -100,15 +101,8 @@ export function useMessaging() {
       });
     });
   }, []);
-  const getChat = useCallback(async () => {
-    const { data } = await api.get("/chats/getChats", {
-      params: {
-        userId: user?.id,
-      },
-    });
-    console.log(data);
-    return data;
-  }, [token, socket]);
+ 
+
 
   // ✅ Send a message safely
   const sendMessage = useCallback(
@@ -123,13 +117,13 @@ export function useMessaging() {
           if (response?.error || response?.status === "error") {
             reject(new Error(response.error || response.message));
           } else {
-            if (response?.message) addMessage(response.message);
+            if (response?.message) appendMessage(response.message);
             resolve(response);
           }
         });
       });
     },
-    [addMessage]
+    [appendMessage]
   );
 
   return {

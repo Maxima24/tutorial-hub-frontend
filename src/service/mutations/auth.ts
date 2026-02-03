@@ -53,5 +53,6 @@ export const useGetUserDetails = (userId:string) => {
       const { safeUser: user } = data.data;
       console.log(user);
     },
+    enabled:!!userId
   });
 };
