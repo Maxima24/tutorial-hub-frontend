@@ -36,10 +36,6 @@ export default function MessagesPage() {
     // Get existing messages
     socket.emit("getMyMessages");
 
-    socket.on("myMessages", (data) => {
-      useMessagesStore.getState().hydrateConversations(data);
-    });
-
     return () => {
       socket.off("receiveMessage");
       socket.off("myMessages");

@@ -117,7 +117,7 @@ function Page() {
             {/* Tutorials Grid */}
             {!isLoading && tutorialVideos && tutorialVideos.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {tutorialVideos.map((tutorial) => (
+                {tutorialVideos.map((tutorial:any) => (
                   <div
                     key={tutorial.id}
                     className="flex flex-col justify-between bg-white rounded-2xl shadow overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 cursor-pointer group"

@@ -103,8 +103,9 @@ export default function AboutSection() {
 
         {/* Features Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-          {features.map((feature, index) => {
+          {features.map((feature:any, index) => {
             const Icon = feature.icon;
+            //@ts-ignore
             const colors = colorClasses[feature.color];
             return (
               <div

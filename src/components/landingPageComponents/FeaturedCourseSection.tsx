@@ -77,6 +77,7 @@ export default function FeaturedCoursesSection() {
         {/* Courses Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
           {courses.map((course, index) => {
+            //@ts-ignore
             const levelStyle = levelColors[course.level];
             return (
               <div

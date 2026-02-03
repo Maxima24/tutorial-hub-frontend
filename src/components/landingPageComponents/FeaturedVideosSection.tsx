@@ -105,7 +105,11 @@ export default function FeaturedVideosSection() {
                 </div>
 
                 {/* Difficulty Badge */}
-                <div className={`absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-semibold ${difficultyColors[video.difficulty]}`}>
+            
+                <div className={`absolute top-3 left-3 px-3 py-1 rounded-full 
+                    text-xs font-semibold ${
+                        //@ts-ignore
+                    difficultyColors[video.difficulty]}`}>
                   {video.difficulty}
                 </div>
               </div>
