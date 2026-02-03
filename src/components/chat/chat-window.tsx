@@ -5,25 +5,21 @@ import { useMessagesStore } from "@/store/message-store";
 import { useUserStore } from "@/store/auth-store";
 import { IParticipants, useChatStore } from "@/store/chat-store";
 
-interface ChatWindowProps {
 
-  recipientName: string;
-  conversations:any
-}
-
-export function ChatWindow({  recipientName,conversations }: ChatWindowProps) {
+export function ChatWindow() {
   const [messageInput, setMessageInput] = useState("");
   const [activeConversation,setActiveConversation] = useState<any>()
   const { sendMessage, isConnected } = useMessaging();
   const selectedChat = useChatStore((s)=>s.currentChatId)
   const getChat = useChatStore((s)=>s.getChat)
+  const containerRef = useRef<HTMLElement>(null)
   const getParticipantsData = useChatStore((s)=>s.getParticipants)
 
-  const [messageData,setMessageData] = useState<any>()
   const userId = useUserStore((state) => state.user?.id);
   // const conversation = useMessagesStore((state) =>
   //   state.getConversation(recipientId)
   // );
+  
   function getMessages(){
   const messages = getChat(selectedChat)
   return messages
@@ -38,20 +34,19 @@ export function ChatWindow({  recipientName,conversations }: ChatWindowProps) {
   const messagesData = getMessages()
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  console.log('THis is the conversations',conversations)
+  
   
 
-  useEffect(()=>{
-    setMessageData(conversations)
-  },[conversations])
-  useEffect(()=>{
-    console.log("This is the message data",messageData)
-  },[setMessageData,messageData])
+
+  //   useEffect(() => {
+  //   messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  // }, [messages]);
+ 
 
   useEffect(() => {
     // Scroll to bottom when new messages arrive
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [conversations?.messages]);
+  }, [messagesData]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -101,7 +96,7 @@ export function ChatWindow({  recipientName,conversations }: ChatWindowProps) {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4" >
         {messagesData?.map((message) => {
           const isOwn = message.senderId === userId;
           console.log("This are the messages",message)

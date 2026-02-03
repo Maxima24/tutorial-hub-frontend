@@ -57,9 +57,7 @@ export default function MessagesPage() {
       <div className="flex-1 h-[95vh] mt-4 ">
         {selectedChat ? (
           <ChatWindow
-            conversations = {selectedConversation}
-            
-            recipientName={`${selectedUserId}`}
+          
           />
         ) : (
           <div className="h-full flex items-center justify-center text-gray-500">
