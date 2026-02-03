@@ -56,7 +56,7 @@ export const Sidebar = () => {
     <div
       className={`${
         isSidebarOpen ? "w-64" : "w-20"
-      } bg-white shadow transition-all duration-300 lg:flex flex-col fixed h-screen hidden z-[1100]`}
+      }  bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 shadow transition-all mt-2 mb-20 duration-300  lg:flex flex-col fixed  h-[96vh] hidden z-[1100] rounded-lg`}
     >
       {/* Header Section */}
       <div className="p-6 flex items-center justify-between border-b border-gray-100">
@@ -74,19 +74,19 @@ export const Sidebar = () => {
       </div>
 
       {/* Navigation Section */}
-      <nav className="flex-1 p-4 space-y-2">
+      <nav className="flex-1 p-4 space-y-4">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = pathname.startsWith(`/${item.id.toLowerCase()}`);
 
           return (
-            <Link href={item.path} key={item.id}>
+            <Link href={item.path} key={item.id} className="mb-2">
               <button
                 onClick={() => handleSidebarButton(item.id as any)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 cursor-pointer ${
+                className={`w-full flex items-center gap-7 px-4 py-3 mb-4 rounded-xl transition-all duration-200 cursor-pointer ${
                   isActive
-                    ? "bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-blue-500/30"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                    ? "bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-blue-500/30 py-2"
+                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 py-2"
                 }`}
               >
                 <Icon size={20} />

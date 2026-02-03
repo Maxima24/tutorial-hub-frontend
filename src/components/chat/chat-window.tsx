@@ -3,74 +3,97 @@ import { useState, useEffect, useRef } from "react";
 import { useMessaging } from "@/hooks/useMessaging";
 import { useMessagesStore } from "@/store/message-store";
 import { useUserStore } from "@/store/auth-store";
+import { IParticipants, useChatStore } from "@/store/chat-store";
 
 interface ChatWindowProps {
-  recipientId: string;
+
   recipientName: string;
+  conversations:any
 }
 
-export function ChatWindow({ recipientId, recipientName }: ChatWindowProps) {
+export function ChatWindow({  recipientName,conversations }: ChatWindowProps) {
   const [messageInput, setMessageInput] = useState("");
   const [activeConversation,setActiveConversation] = useState<any>()
   const { sendMessage, isConnected } = useMessaging();
-  const userId = useUserStore((state) => state.user?.id);
-  const conversation = useMessagesStore((state) =>
-    state.getConversation(recipientId)
-  );
-  
+  const selectedChat = useChatStore((s)=>s.currentChatId)
+  const getChat = useChatStore((s)=>s.getChat)
+  const getParticipantsData = useChatStore((s)=>s.getParticipants)
 
+  const [messageData,setMessageData] = useState<any>()
+  const userId = useUserStore((state) => state.user?.id);
+  // const conversation = useMessagesStore((state) =>
+  //   state.getConversation(recipientId)
+  // );
+  function getMessages(){
+  const messages = getChat(selectedChat)
+  return messages
+  console.log("This is the messages",messages)
+  }
+  function getParticipants(){
+    const participants  = getParticipantsData(selectedChat)
+    if(!participants) return ([] as IParticipants[])
+    return participants
+  }
+  const userProfile = getParticipants().find((participant)=>participant.userId !== userId)
+  const messagesData = getMessages()
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    // Set this conversation as active when component mounts
-    setActiveConversation(recipientId);
+  console.log('THis is the conversations',conversations)
+  
 
-    return () => {
-      // Clear active conversation when unmounting
-      setActiveConversation(null);
-    };
-  }, [recipientId, setActiveConversation]);
+  useEffect(()=>{
+    setMessageData(conversations)
+  },[conversations])
+  useEffect(()=>{
+    console.log("This is the message data",messageData)
+  },[setMessageData,messageData])
 
   useEffect(() => {
     // Scroll to bottom when new messages arrive
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [conversation?.messages]);
+  }, [conversations?.messages]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!messageInput.trim() || !userId) return;
-
+    const trimmedMessage = messageInput.trim()
+    if (!trimmedMessage || !userId) return;
+     setMessageInput("");
     try {
       console.log({
         senderId: userId,
-        recieverId: recipientId,
-        content: messageInput.trim(),
+        recieverId: userProfile?.user.id,
+        content: trimmedMessage,
       });
-      await sendMessage({
-         recipientId,
-        content: messageInput.trim(),
-      });
-      setMessageInput("");
+      if(!userProfile){
+        console.error ("User profile cant be found")
+        return 
+      }
+      await sendMessage({reciepientId:userProfile?.user.id!,
+        content: trimmedMessage,
+        isGroup:false}
+      );
+      
     } catch (error) {
       console.error("Failed to send message:", error);
       // You can add toast notification here
+      setMessageInput(trimmedMessage)
     }
+    
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className=" bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex flex-col h-full rounded-lg mr-2 ring-1 ring-gray-200 backdrop-blur-md shadow-md">
       {/* Header */}
-      <div className="border-b p-4">
+      <div className=" p-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">{recipientName}</h2>
+          <h2 className="text-lg font-semibold">{userProfile?.user.name}</h2>
           <div className="flex items-center gap-2">
             <div
               className={`h-2 w-2 rounded-full ${
                 isConnected ? "bg-green-500" : "bg-red-500"
               }`}
             />
-            <span className="text-sm text-gray-500">
+            <span className="text-sm text-green-500">
               {isConnected ? "Connected" : "Disconnected"}
             </span>
           </div>
@@ -79,22 +102,21 @@ export function ChatWindow({ recipientId, recipientName }: ChatWindowProps) {
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {conversation?.messages.map((message) => {
+        {messagesData?.map((message) => {
           const isOwn = message.senderId === userId;
+          console.log("This are the messages",message)
 
           return (
             <div
               key={message.id}
-              className={`flex ${isOwn ? "justify-end" : "justify-start"}`}
+              className={`flex ${isOwn ? "justify-end" : "justify-start"} rounded-4xl`}
             >
               <div
-                className={`max-w-[70%] rounded-lg p-3 ${
-                  isOwn ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-900"
-                }`}
+                className={`max-w-[70%] rounded-lg p-3 text-white rounded-[50%] bg-blue-400`}
               >
                 <p className="break-words">{message.content}</p>
                 <span className="text-xs opacity-70 mt-1 block">
-                  {new Date(message.createdAt).toLocaleTimeString()}
+                  {new Date(message.createAt).toLocaleTimeString()}
                 </span>
               </div>
             </div>
@@ -104,13 +126,13 @@ export function ChatWindow({ recipientId, recipientName }: ChatWindowProps) {
       </div>
 
       {/* Input */}
-      <form onSubmit={handleSendMessage} className="border-t p-4">
+      <form onSubmit={handleSendMessage} className=" p-4">
         <div className="flex gap-2">
           <input
             type="text"
             value={messageInput}
             onChange={(e) => setMessageInput(e.target.value)}
-            placeholder="Type a message..."
+            placeholder="Type a message..." 
             className="flex-1 rounded-lg border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             disabled={!isConnected}
           />

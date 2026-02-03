@@ -8,22 +8,29 @@ import { useMessaging } from "@/hooks/useMessaging";
 import { useUserStore } from "@/store/auth-store";
 import { useMessagesStore } from "@/store/message-store";
 import { join } from "path";
+import { useChatStore } from "@/store/chat-store";
 
 export default function MessagesPage() {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [messages, setMessages] = useState<any>();
+  const [converListObject,setConverListObject] = useState<any>()
+  const [selectedConversation,setSelectedConversation] = useState<any>()
   const { socket, isConnected, getChat } = useMessaging();
   const user = useUserStore((state) => state.user);
+  const chats  = useChatStore((s)=>s.chats)
+  const selectedChat = useChatStore((s)=>s.currentChatId)
   const token = useUserStore((state) => state.token);
-  useEffect(() => {
-    getChat();
-  }, [token]);
+  
+  useEffect(()=>{
+    console.log(converListObject) 
+  },[converListObject])
+
   useEffect(() => {
     if (!socket) return;
 
     // Listen for incoming messages
     socket.on("receiveMessage", (message) => {
-      useMessagesStore.getState().addMessage(message);
+      useChatStore.getState().appendMessage(message);
     });
 
     // Get existing messages
@@ -39,21 +46,24 @@ export default function MessagesPage() {
     };
   }, [socket]);
   return (
-    <div className="h-screen flex">
+    <div className="h-[95vh] flex bg-white">
       {/* Conversations Sidebar */}
-      <div className="w-80">
+      <div className="w-80 mr-2">
         <ConversationsList
+          conversations ={chats}
           onSelectConversation={setSelectedUserId}
+          setSelectedConversation = {setSelectedConversation}
           selectedUserId={selectedUserId}
         />
       </div>
 
       {/* Chat Window */}
-      <div className="flex-1">
-        {selectedUserId ? (
+      <div className="flex-1 h-[95vh] mt-4 ">
+        {selectedChat ? (
           <ChatWindow
-            recipientId={selectedUserId}
-            recipientName={`User ${selectedUserId}`}
+            conversations = {selectedConversation}
+            
+            recipientName={`${selectedUserId}`}
           />
         ) : (
           <div className="h-full flex items-center justify-center text-gray-500">
