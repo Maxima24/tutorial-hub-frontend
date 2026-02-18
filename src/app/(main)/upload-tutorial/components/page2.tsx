@@ -323,7 +323,7 @@ const SecondPage = ({
                       <p className="text-sm text-gray-600">
                         {selectedVideo && formatFileSize(selectedVideo.size)}
                       </p>
-                    </div>
+                    </div> 
                   </div>
                 </div>
               )}

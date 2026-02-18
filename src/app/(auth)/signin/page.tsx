@@ -153,13 +153,14 @@ const LoginPage = () => {
 
             <button
               type="submit"
-              className="w-full h-12 bg-gradient-to-r from-blue-600 to-blue-500 hover:opacity-90 text-white font-semibold rounded-full transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+              className= " flex items-center justify-center w-full h-12 bg-linear-to-r from-blue-600 to-blue-500 hover:opacity-90 text-white font-semibold rounded-full transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
               disabled={isLoading}
             >
               {isLoading ? (
                 <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-1 border-white/30 border-t-white rounded-full animate-spin" />
-                  Logging in...
+                  <div className="w-4 h-4 border border-white/30 border-t-white rounded-full animate-spin " />
+
+                  {/* Logging in... */}
                 </div>
               ) : (
                 "Login"
