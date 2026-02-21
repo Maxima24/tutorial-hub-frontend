@@ -56,7 +56,7 @@ function Page() {
 
   return (
     <div
-      className={`flex flex-col min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50`}
+      className={`flex flex-col min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-indigo-50`}
     >
       <div className="flex-1 overflow-auto">
         {/** main content */}
@@ -73,8 +73,8 @@ function Page() {
             </div>
 
             {/* Search & Filter */}
-            <div className="flex gap-4 mb-8">
-              <div className="flex-1 relative">
+            <div className="   self-center justify-self-center flex gap-4 mb-8">
+              <div className=" flex-1 relative">
                 <Search
                   className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
                   size={20}
@@ -84,10 +84,10 @@ function Page() {
                   placeholder="Search tutorials..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full text-black pl-12 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:outline-none transition-colors"
+                  className="w-full  text-black pl-25 pr-25 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:outline-none transition-colors placeholder:text-center"
                 />
               </div>
-              <button className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-blue-500/30 border-2 border-gray-200 rounded-xl transition-colors flex items-center gap-2 font-medium cursor-pointer">
+              <button className="px-6 py-3 bg-linear-to-r from-blue-600 to-blue-500 text-white shadow-blue-500/30 border-2 border-gray-200 rounded-xl transition-colors flex items-center gap-2 font-medium cursor-pointer">
                 <Filter size={20} />
                 Filter
               </button>
@@ -116,11 +116,11 @@ function Page() {
 
             {/* Tutorials Grid */}
             {!isLoading && tutorialVideos && tutorialVideos.length > 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {tutorialVideos.map((tutorial:any) => (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-y-6 lg:gap-x-10">
+                {tutorialVideos.map((tutorial:any) => ( 
                   <div
                     key={tutorial.id}
-                    className="flex flex-col justify-between bg-white rounded-2xl shadow overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 cursor-pointer group"
+                    className="flex w-96 aspect-square flex-col justify-between bg-white rounded-2xl shadow overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 cursor-pointer group"
                   >
                     <div className="h-48 relative flex items-center justify-center overflow-hidden">
                       {tutorial.thumbnailUrl ? (
@@ -133,7 +133,7 @@ function Page() {
                         />
                       ) : (
                         // Fallback placeholder when no thumbnail
-                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-400 to-indigo-500">
+                        <div className="w-full h-full flex items-center justify-center bg-linear-to-br from-blue-400 to-indigo-500">
                           <BookOpen className="text-white/30" size={64} />
                         </div>
                       )}
@@ -176,7 +176,7 @@ function Page() {
                           {tutorial.students || 0} students
                         </span>
                         <button
-                          className="px-4 py-2 bg-gradient-to-r from-blue-600 via-blue-500 to-blue-700 text-white rounded-lg font-medium hover:shadow-lg transition-all cursor-pointer"
+                          className="px-4 py-2 bg-linear-to-r from-blue-600 via-blue-500 to-blue-700 text-white rounded-lg font-medium hover:shadow-lg transition-all cursor-pointer"
                           onClick={() => router.push(`/tutorials/${tutorial.id}`)}
                         >
                           Start

@@ -7,7 +7,7 @@ import { useUserStore } from "@/store/auth-store";
 import { useMessagesStore } from "@/store/message-store";
 import { api } from "@/service/api";
 import { join } from "path";
-import { useChatStore } from "@/store/chat-store";
+import { IMessage, IReply, useChatStore } from "@/store/chat-store";
 
 let socket: Socket | null = null;
 
@@ -25,12 +25,21 @@ interface SendMessagePayload {
   content:string
   
 }
+export interface ReplyMessagePayload{
+  isGroup:boolean
+    reciepientId:string
+      content:string
+    messageId:string
+
+
+}
 
 export function useMessaging() {
   const token = useUserStore((s) => s.token);
   const user = useUserStore((s) => s.user); 
   const setChats = useChatStore((s) => s.setChats);
   const appendMessage = useChatStore((s)=>s.appendMessage)
+  const appendReply = useChatStore((s)=>s.appendReply)
 
   // ✅ Initialize socket once per token
   const getChat = useCallback(async () => {
@@ -71,10 +80,17 @@ export function useMessaging() {
     console.log("User chats:", userChatData);
   });
 
-  socket.on("receiveMessage", (message:any) => {
+  socket.on("receiveMessage", (message:IMessage) => {
     console.log("📨 Received message:", message);
     appendMessage(message);
   });
+  socket.on("receiveReply",(reply)=>{
+    alert("ee")
+    console.log("THis is the reply object ",reply)
+    appendReply(reply)
+    
+
+  })
 
   return () => {
     console.log("🧹 Cleaning up socket");
@@ -82,7 +98,7 @@ export function useMessaging() {
     socket?.disconnect();
     socket = null;
   };
-}, [token, user?.id, getChat, appendMessage]);
+}, [token, user?.id, getChat, appendMessage,appendReply]);
 
   // ✅ Fetch messages for a specific conversation
   const fetchMessages = useCallback((otherUserId: string) => {
@@ -124,12 +140,35 @@ export function useMessaging() {
       });
     },
     [appendMessage]
-  );
+  )
+  const replyMessage = useCallback(
+  (payload: ReplyMessagePayload) => {
+    if (!socket || !socket.connected) {
+      return Promise.reject(new Error("Socket not connected"));
+    }
 
+    return new Promise((resolve, reject) => {
+      console.log("This is the payload for the reply", payload);
+
+      socket!.emit("replyMessage", payload, (response: any) => {
+        if (response?.error || response?.status === "error") {
+          reject(new Error(response?.error || response?.message));
+        } else {
+          console.log("Reply sent successfully");
+          resolve(response); // ✅ IMPORTANT: resolve the promise
+        }
+      });
+    });
+  },
+  [socket,appendReply] // ✅ dependency array belongs here
+);
+
+  
   return {
     socket,
     sendMessage,
     fetchMessages,
+    replyMessage,
     getChat, // Export this new function
     isConnected: socket?.connected ?? false,
   };

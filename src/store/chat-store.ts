@@ -3,13 +3,16 @@ import { persist } from "zustand/middleware";
 
 interface IChatStore {
   chats: Map<string, Ichat>;
+  replyTo: Map<string, IMessage>;
   setChats: (chats: Ichat[]) => void;
+  setReplyto: (replyToMessage: IMessage[]) => void;
   appendMessage: (message: IMessage) => void;
+  appendReply: (replyObject: IReply) => void;
   getChat: (chatId: string) => IMessage[];
-  getParticipants:(chatId:string) => IParticipants[]
+  getParticipants: (chatId: string) => IParticipants[];
   currentChatId: string;
   setCurrentChatId: (chatId: string) => void;
-  clearCurrentChatId: () => void
+  clearCurrentChatId: () => void;
 }
 interface IUser {
   id: string;
@@ -22,7 +25,7 @@ interface IUser {
   verified: boolean;
 }
 
- export interface IParticipants {
+export interface IParticipants {
   id: string;
   chatId: string;
   userId: string;
@@ -33,14 +36,15 @@ interface ISender {
   name: string;
   email: string;
 }
-interface IMessage {
+ export interface IMessage {
   id: string;
   senderId: string;
   content: string;
-  createAt: string;
+  createdAt: string;
   updatedAt: string;
   chatId: string;
   sender: ISender;
+  replies: IReply[];
 }
 interface Ichat {
   id: string;
@@ -50,22 +54,81 @@ interface Ichat {
   participants: IParticipants[];
   messages: IMessage[];
 }
+ export interface IReply {
+  id: string;
+  message: string;
+  messageId: string;
+  senderId: string;
+  parentReplyId: string | null;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+  chatId: string;
+}
 export const useChatStore = create<IChatStore>()(
   persist(
     (set, get) => ({
       chats: new Map(),
+      replyTo: new Map(),
       currentChatId: "",
       setCurrentChatId: (chatId: string) =>
         set(() => ({
           currentChatId: chatId,
         })),
-      clearCurrentChatId:()=> set(()=>({
-            currentChatId:""
+      setReplyto: (replyObjects) =>
+        set(() => ({
+          replyTo: new Map(
+            replyObjects.map((replyObject) => [replyObject.id, replyObject]),
+          ),
         })),
-        getParticipants:(chatId)=> {
-            const participants  = get().chats.get(chatId)?.participants
-            return participants || []
-        },
+    appendReply: (replyObject) =>
+  set((state) => {
+    const chat = state.chats.get(replyObject.chatId);
+
+    if (!chat) return state;
+
+    // check duplicate reply
+    const replyIds = new Set(
+      chat.messages.flatMap(m =>
+        m.replies?.map(r => r.id) || []
+      )
+    );
+
+    if (replyIds.has(replyObject.id)) return state;
+
+    // update messages immutably
+    const updatedMessages = chat.messages.map(message => {
+      if (message.id === replyObject.messageId) {
+        return {
+          ...message,
+          replies: [...(message.replies || []), replyObject],
+        };
+      }
+      return message;
+    });
+
+    const updatedChat = {
+      ...chat,
+      messages: updatedMessages,
+    };
+
+    // update Map immutably
+    const newChats = new Map(state.chats);
+    newChats.set(replyObject.chatId, updatedChat);
+
+    return {
+      chats: newChats
+    };
+  }),
+
+      clearCurrentChatId: () =>
+        set(() => ({
+          currentChatId: "",
+        })),
+      getParticipants: (chatId) => {
+        const participants = get().chats.get(chatId)?.participants;
+        return participants || [];
+      },
       setChats: (chatsArray) =>
         set(() => ({
           chats: new Map(chatsArray.map((chat) => [chat.id, chat])),
@@ -79,7 +142,7 @@ export const useChatStore = create<IChatStore>()(
           const updatedChat = {
             ...chat,
             messages: [...chat.messages, message].sort(
-              (a, b) => Number(a.createAt) - Number(b.createAt),
+              (a, b) => Number(a.createdAt) - Number(b.createdAt),
             ),
           };
           const updatedChats = new Map(state.chats);
@@ -87,9 +150,9 @@ export const useChatStore = create<IChatStore>()(
           return { chats: updatedChats };
         }),
       getChat: (chatId: string) => {
-        console.log("THe currentChatId is ", chatId)
+        console.log("THe currentChatId is ", chatId);
         const currentChat = get().chats.get(chatId);
-        return currentChat?.messages || ([] as IMessage[])
+        return currentChat?.messages || ([] as IMessage[]);
       },
     }),
     {

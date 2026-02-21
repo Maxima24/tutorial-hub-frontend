@@ -9,6 +9,8 @@ export const useGetVideos = () => {
       if (!data) {
         console.error("Vidoes could not be fetched from the endpoint ");
       }
+            console.log("THis is the tutorial data",data)
+
       return data;
     },
     enabled: true,
