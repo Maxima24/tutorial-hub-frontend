@@ -102,7 +102,7 @@ function Page() {
             )}
 
             {/* Empty State */}
-            {!isLoading && tutorialVideos?.length === 0 && (
+            {isLoading && tutorialVideos?.length === 0 && (
               <div className="text-center py-12">
                 <BookOpen className="mx-auto h-16 w-16 text-gray-400 mb-4" />
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">
