@@ -1,89 +1,118 @@
-'use client'
-import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from "react"
+// components/chat/popup-menu.tsx
+"use client";
+import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
+import { Reply, Trash2 } from "lucide-react";
 
-interface PopUpMenuProps{
-  anchorEl:HTMLElement |null
-    messageId:string
-    setPopupOpen: Dispatch<SetStateAction<any>>
-    isOwn: boolean | null
-    setReplyTo:Dispatch<SetStateAction<any>>
-    messageObject:any
+interface PopUpMenuProps {
+  anchorEl: HTMLElement | null;
+  messageId: string;
+  setPopupOpen: Dispatch<SetStateAction<any>>;
+  isOwn: boolean | null;
+  setReplyTo: Dispatch<SetStateAction<any>>;
+  messageObject: any;
 }
-const MENU_WIDTH = 256
-const MENU_HEIGHT = 96
 
-export const PopUpMenu = ({setPopupOpen,setReplyTo,anchorEl,messageId,messageObject,isOwn}:PopUpMenuProps)=>{
-    const functions = [
-        {
-            name:"Reply now"
-        }, 
-        {
-            name:"delete message"
-        },
+const MENU_WIDTH = 160;
+const MENU_HEIGHT = 90;
+const OFFSET = 8;
 
-    ]
-      const menuRef = useRef<HTMLDivElement | null>(null)
+export const PopUpMenu = ({
+  setPopupOpen,
+  setReplyTo,
+  anchorEl,
+  messageId,
+  messageObject,
+  isOwn,
+}: PopUpMenuProps) => {
+  const menuRef = useRef<HTMLDivElement | null>(null);
+  const [position, setPosition] = useState({ top: 0, left: 0 });
+  const [ready, setReady] = useState(false);
 
-    const [position,setPosition]= useState({
-        top:0,
-        x:0
-    })
-    useEffect(()=>
-    {
-        if(!anchorEl || !menuRef.current) return 
-          const anchorRect = anchorEl.getBoundingClientRect()
-    const menuRect = menuRef.current.getBoundingClientRect()
+  useEffect(() => {
+    if (!anchorEl) return;
 
-    const OFFSET = 20 // small spacing
+    const anchorRect = anchorEl.getBoundingClientRect();
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
 
-    const top = anchorRect.top -  OFFSET 
-    const x =   isOwn
-      ? (window.innerWidth - anchorRect.right +100)
-      : anchorRect.left-600
+    // Prefer opening above the bubble; fall back to below
+    let top = anchorRect.top - MENU_HEIGHT - OFFSET;
+    if (top < 8) top = anchorRect.bottom + OFFSET;
+    // Clamp vertically
+    top = Math.min(top, vh - MENU_HEIGHT - 8);
+    top = Math.max(top, 8);
 
-        setPosition({
-            top,x
-        })
+    // Horizontal: align to the side the bubble is on
+    let left = isOwn
+      ? anchorRect.right - MENU_WIDTH
+      : anchorRect.left;
+    // Clamp horizontally
+    left = Math.min(left, vw - MENU_WIDTH - 8);
+    left = Math.max(left, 8);
 
-    },[anchorEl])
-    useEffect(()=>{
-        const handler = (e:MouseEvent)=>{
-            if(menuRef.current&& !menuRef.current?.contains(e.target as Node)){
-                setPopupOpen((prev:any)=>(
-                    {
-                        ...prev,visible:false
-                    }
-                ))
-            }
-        }
-        document.addEventListener("mousedown",handler)
-        return ()=> document.removeEventListener("mousedown",handler)
-    },[])
+    setPosition({ top, left });
+    setReady(true);
+  }, [anchorEl, isOwn]);
 
-    const handleReply = () =>{
-        setReplyTo(messageObject)
-    }
+  // Close on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setPopupOpen((prev: any) => ({ ...prev, visible: false }));
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [setPopupOpen]);
 
-    return (
-      <section
+  // Close on outside touch (mobile)
+  useEffect(() => {
+    const handler = (e: TouchEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setPopupOpen((prev: any) => ({ ...prev, visible: false }));
+      }
+    };
+    document.addEventListener("touchstart", handler);
+    return () => document.removeEventListener("touchstart", handler);
+  }, [setPopupOpen]);
+
+  const close = () => setPopupOpen((prev: any) => ({ ...prev, visible: false }));
+
+  return (
+    <div
       ref={menuRef}
-      className="fixed w-64 bg-linear-to-br from-slate-50 via-blue-50 to-indigo-50  shadow-lg rounded-lg py-2 z-50"
-     style={{
-  top: `${position.top}px`,
-  ...(isOwn
-    ? { right: `${position.x}px` }
-    : { left: `${position.x}px` }
-  )
-}}
+      className={`fixed z-[9999] bg-white rounded-xl shadow-xl border border-gray-100 py-1 overflow-hidden transition-opacity duration-100 ${
+        ready ? "opacity-100" : "opacity-0"
+      }`}
+      style={{
+        top: position.top,
+        left: position.left,
+        width: MENU_WIDTH,
+      }}
     >
-      <button className="block w-full px-4 py-2 hover:bg-gray-100"
-      onClick={()=>handleReply()}>
+      <button
+        className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+        onClick={() => {
+          setReplyTo(messageObject);
+          close();
+        }}
+      >
+        <Reply size={15} />
         Reply
       </button>
 
-      <button className="block w-full px-4 py-2 hover:bg-gray-100 text-red-500">
+      <div className="h-px bg-gray-100 mx-3" />
+
+      <button
+        className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors"
+        onClick={() => {
+          // wire up delete handler here
+          close();
+        }}
+      >
+        <Trash2 size={15} />
         Delete
       </button>
-    </section>
-    )
-}
+    </div>
+  );
+};
