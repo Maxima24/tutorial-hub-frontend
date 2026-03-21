@@ -71,7 +71,7 @@ function VideoPlayerPage() {
 
   useEffect(() => {
     if (tutorialVideos && videoId) {
-      const video = tutorialVideos?.find((v: any) => String(v.id) == String(videoId));
+      const video = tutorialVideos?.find((v: any) => String(v.id) === String(videoId));
       console.log(video)
       if(!video){
         console.error("The video not found",video)
@@ -243,7 +243,7 @@ function VideoPlayerPage() {
 
   const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
 
-  if (isLoading && !currentVideo) {
+  if (isLoading  || (!tutorialVideos&& !currentVideo)) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
         <div className="animate-spin h-10 w-10 border-[3px] border-blue-600 border-t-transparent rounded-full" />
