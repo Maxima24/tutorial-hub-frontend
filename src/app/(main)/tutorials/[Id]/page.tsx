@@ -22,7 +22,7 @@ import {
   Star,
   MessageCircle,
 } from "lucide-react";
-import { useGetVideos } from "@/service/query/vides.query";
+import { useGetSingleVideo, useGetVideos } from "@/service/query/vides.query";
 import { useMessaging } from "@/hooks/useMessaging";
 import { useUserStore } from "@/store/auth-store";
 
@@ -38,9 +38,10 @@ function VideoPlayerPage() {
   const [isMoreOptionsOpen, setIsMoreOptionsOpen] = useState(false);
   const moreOptionsRef = useRef<HTMLDivElement>(null);
   const userId = useUserStore((state) => state.user?.id);
-  const { data: tutorialVideos, isLoading } = useGetVideos();
+  const { data: tutorialVideo, isLoading,isError } = useGetSingleVideo(videoId)
+  const {data:tutorialVideos} = useGetVideos()
 
-  const [currentVideo, setCurrentVideo] = useState<any>(null);
+
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -72,20 +73,20 @@ function VideoPlayerPage() {
     return () => document.removeEventListener("mousedown", handler);
   }, [isMoreOptionsOpen]);
 
-  useEffect(() => {
-    if (tutorialVideos && videoId) {
-      const video = tutorialVideos?.find((v: any) => String(v.id) === String(videoId));
-      console.log(video)
-      if(!video){
-        console.error("The video not found",video)
-      }
-      setCurrentVideo(video);
-    }
-  }, [tutorialVideos, videoId]);
+  // useEffect(() => {
+  //   if (tutorialVideos && videoId) {
+  //     const video = tutorialVideos?.find((v: any) => String(v.id) === String(videoId));
+  //     console.log(video)
+  //     if(!video){
+  //       console.error("The video not found",video)
+  //     }
+  //     setCurrentVideo(video);
+  //   }
+  // }, [tutorialVideos, videoId]);
 
   useEffect(() => {
     const video = videoRef.current;
-    if (!video || !currentVideo?.videoUrl) return;
+    if (!video || !tutorialVideo?.videoUrl) return;
     setCurrentTime(0);
     setDuration(0);
     setWatchedPercentage(0);
@@ -116,7 +117,7 @@ function VideoPlayerPage() {
       video.removeEventListener("canplay", onCanPlay);
       video.removeEventListener("ended", onEnded);
     };
-  }, [currentVideo?.videoUrl]);
+  }, [tutorialVideo?.videoUrl]);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -228,8 +229,8 @@ function VideoPlayerPage() {
   const handleOption = async (option: string) => {
     setIsMoreOptionsOpen(false);
     if (option.toLowerCase() === "message user") {
-      if (!userId || !isConnected || userId === currentVideo?.userId) return;
-      await sendMessage({ isGroup: false, content: "Hi, I love your video content!", reciepientId: currentVideo.userId });
+      if (!userId || !isConnected || userId === tutorialVideo?.userId) return;
+      await sendMessage({ isGroup: false, content: "Hi, I love your video content!", reciepientId: tutorialVideo?.userId });
     }
   };
 
@@ -246,7 +247,7 @@ function VideoPlayerPage() {
 
   const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
 
-  if (isLoading  || (!tutorialVideos&& !currentVideo)) {
+  if (isLoading  ||  !tutorialVideo) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
         <div className="animate-spin h-10 w-10 border-[3px] border-blue-600 border-t-transparent rounded-full" />
@@ -254,7 +255,7 @@ function VideoPlayerPage() {
     );
   }
 
-  if (!currentVideo) {
+  if (!tutorialVideo) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl shadow-xl p-10 text-center max-w-sm w-full">
@@ -290,7 +291,7 @@ function VideoPlayerPage() {
             {/* Desktop: show video title */}
             <p className="text-xs text-slate-400 hidden sm:block">Now Playing</p>
             <h1 className="text-sm font-semibold text-slate-900 truncate hidden sm:block">
-              {currentVideo.title}
+              {tutorialVideo?.title}
             </h1>
             {/* Mobile: just "Tutorials" label */}
             <h1 className="text-sm font-semibold text-slate-700 sm:hidden">Back to Tutorials</h1>
@@ -313,10 +314,10 @@ function VideoPlayerPage() {
             >
               <video
                 ref={videoRef}
-                src={currentVideo.videoUrl}
+                src={tutorialVideo.videoUrl}
                 preload="metadata"
                 crossOrigin="anonymous"
-                poster={typeof currentVideo.thumbnailUrl === "string" ? currentVideo.thumbnailUrl : undefined}
+                poster={typeof tutorialVideo.thumbnailUrl === "string" ? tutorialVideo.thumbnailUrl : undefined}
                 className="w-full h-full cursor-pointer"
                 onClick={togglePlay}
               />
@@ -434,19 +435,19 @@ function VideoPlayerPage() {
 
               {/* Title */}
               <h1 className="text-base sm:text-xl lg:text-2xl font-bold text-slate-900 leading-snug mb-3">
-                {currentVideo.title}
+                {tutorialVideo?.title}
               </h1>
 
               {/* Meta */}
               <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-slate-500 mb-4 pb-4 border-b border-slate-100">
                 <span className="flex items-center gap-1.5">
                   <Clock size={13} className="text-slate-400" />
-                  {formatDuration(currentVideo.duration)}
+                  {formatDuration(tutorialVideo.duration)}
                 </span>
-                {currentVideo.rating && (
+                {tutorialVideo.rating && (
                   <span className="flex items-center gap-1.5">
                     <Star size={13} className="text-yellow-400 fill-yellow-400" />
-                    <span className="font-semibold text-slate-700">{currentVideo.rating}</span>
+                    <span className="font-semibold text-slate-700">{tutorialVideo.rating}</span>
                   </span>
                 )}
                 {watchedPercentage >= 90 && (
@@ -516,9 +517,9 @@ function VideoPlayerPage() {
               {/* Description */}
               <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
                 <p className={`text-xs sm:text-sm text-slate-700 leading-relaxed whitespace-pre-line ${showDescription ? "" : "line-clamp-2"}`}>
-                  {currentVideo.description || "No description available."}
+                  {tutorialVideo.description || "No description available."}
                 </p>
-                {currentVideo.description?.length > 100 && (
+                {tutorialVideo.description?.length > 100 && (
                   <button
                     onClick={() => setShowDescription(!showDescription)}
                     className="mt-2 flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700 transition"
