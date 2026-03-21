@@ -31,6 +31,9 @@ function VideoPlayerPage() {
   const params = useParams();
   const router = useRouter();
   const videoId = params.id as string;
+  useEffect(()=>{
+    console.log("This is the video id",videoId)
+  },[videoId])
 
   const [isMoreOptionsOpen, setIsMoreOptionsOpen] = useState(false);
   const moreOptionsRef = useRef<HTMLDivElement>(null);
