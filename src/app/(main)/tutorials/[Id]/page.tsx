@@ -25,10 +25,11 @@ import {
 import { useGetSingleVideo, useGetVideos } from "@/service/query/vides.query";
 import { useMessaging } from "@/hooks/useMessaging";
 import { useUserStore } from "@/store/auth-store";
-
-function VideoPlayerPage() {
+interface Props{
+  params:{id:string}
+}
+function VideoPlayerPage({ params }: Props) {
   const { socket, isConnected, sendMessage } = useMessaging();
-  const params = useParams();
   const router = useRouter();
   const videoId = params.id as string;
   useEffect(()=>{
