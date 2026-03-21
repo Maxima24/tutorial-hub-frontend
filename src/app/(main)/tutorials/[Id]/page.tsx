@@ -28,7 +28,7 @@ import { useUserStore } from "@/store/auth-store";
 interface Props{
   params:{id:string}
 }
-function VideoPlayerPage({ params }: Props) {
+function Page({ params }: Props) {
   const { socket, isConnected, sendMessage } = useMessaging();
   const router = useRouter();
   const videoId = params.id as string;
