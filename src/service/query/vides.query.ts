@@ -17,3 +17,20 @@ export const useGetVideos = () => {
     staleTime: 15 * 1000,
   });
 };
+
+export const useGetSingleVideo = (videoId:string)=>{
+  return useQuery({
+    queryKey:["video",videoId],
+    queryFn: async ()=>{
+      const {data} = await api.get("/video",{
+        params:{
+          id:videoId
+        }
+      })
+      return data
+    },
+    enabled:!!videoId,
+    retry:3,
+    staleTime:15*1000
+  })
+}
