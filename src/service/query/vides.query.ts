@@ -22,11 +22,7 @@ export const useGetSingleVideo = (videoId:string)=>{
   return useQuery({
     queryKey:["video",videoId],
     queryFn: async ()=>{
-      const {data} = await api.get("/video",{
-        params:{
-          id:videoId
-        }
-      })
+      const {data} = await api.get(`/video/${videoId}`)
       return data.video
     },
     enabled:!!videoId,
