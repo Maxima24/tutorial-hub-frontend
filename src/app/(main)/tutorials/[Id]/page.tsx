@@ -31,8 +31,8 @@ interface Props{
 function Page({ params }: Props) {
   const { socket, isConnected, sendMessage } = useMessaging();
   const router = useRouter();
-  const {} = useParams
-  const videoId = params.id as string;
+  const {Id:videoId} = useParams()
+
   useEffect(()=>{
     console.log("This is the video id",videoId)
   },[videoId])
@@ -40,7 +40,7 @@ function Page({ params }: Props) {
   const [isMoreOptionsOpen, setIsMoreOptionsOpen] = useState(false);
   const moreOptionsRef = useRef<HTMLDivElement>(null);
   const userId = useUserStore((state) => state.user?.id);
-  const { data: tutorialVideo, isLoading,isError } = useGetSingleVideo(videoId)
+  const { data: tutorialVideo, isLoading,isError } = useGetSingleVideo(videoId as string)
   const {data:tutorialVideos} = useGetVideos()
 
 
