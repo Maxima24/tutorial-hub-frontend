@@ -613,4 +613,4 @@ function Page({ params }: Props) {
   );
 }
 
-export default VideoPlayerPage;
+export default Page
