@@ -27,7 +27,7 @@ export const useGetSingleVideo = (videoId:string)=>{
           id:videoId
         }
       })
-      return data
+      return data.video
     },
     enabled:!!videoId,
     retry:3,
