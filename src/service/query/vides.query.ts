@@ -31,6 +31,5 @@ export const useGetSingleVideo = (videoId:string)=>{
     },
     enabled:!!videoId,
     retry:3,
-    staleTime:15*1000
-  })
+    })
 }
