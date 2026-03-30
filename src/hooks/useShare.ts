@@ -15,6 +15,7 @@ export const useShare =()=>{
             text:`${data.text} at ${data.url}`,
             url:data.url
         }
+        console.log("This is the navigator.share",navigator.share)
         if(navigator.share){
             try{
                   await navigator.share(item)
