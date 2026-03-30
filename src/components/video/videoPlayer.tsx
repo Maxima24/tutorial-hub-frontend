@@ -231,10 +231,6 @@ function VideoPlayer({ id }: { id: string }) {
       } catch (err) {
         console.error("Could not share video",err)
       }
-
-
-
-
     }
 
 
