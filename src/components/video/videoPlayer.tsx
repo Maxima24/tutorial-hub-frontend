@@ -218,13 +218,12 @@ function VideoPlayer({ id }: { id: string }) {
     const handleShare = async() => {
       const url = window.location
       
-if(!tutorialVideo) return
       try {
         
         const urlLink = `${url.origin}/${videoId}`
         const payload:shareData = {
-          title:tutorialVideo.title,
-          text:tutorialVideo.description,
+          title:tutorialVideo?.title ?? "",
+          text:tutorialVideo?.description ?? "",
           url:urlLink
 
         }
@@ -513,7 +512,8 @@ if (!tutorialVideo) return <div>No video found</div>;
                   </button>
                 </div>
 
-                <button className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl transition text-slate-700 flex-shrink-0 text-xs sm:text-sm font-medium" onClick={handleShare}>
+                <button className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl transition text-slate-700 flex-shrink-0 text-xs sm:text-sm font-medium" onClick={handleShare}
+                disabled={!tutorialVideo || !videoId }>
                   <Share2 size={15} />
                   Share
                 </button>
