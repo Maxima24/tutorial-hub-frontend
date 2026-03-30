@@ -30,7 +30,7 @@ export default function RootLayout({
   //const currentPageConfig = getPageConfig(pathname) || { title: "Dashboard", subtitle: "Overview" } ;
 
   return (
-    <html lang="en">
+    <html lang="en" >
       <SidebarProvider>
         <MiniSideBarProvider>
           <body>

@@ -46,7 +46,8 @@ export const SidebarProvider = ({ children }: { children: ReactNode }) => {
   }
 
   const handleSidebarButton = (pathname: PageType) => {
-     setSortMenu(pathname);   // set active button
+     setSortMenu(pathname);
+     setIsCollapsedDesktop(false)  // set active button
      setIsOpenMobile(false); // close mobile sidebar if needed
   };
   
