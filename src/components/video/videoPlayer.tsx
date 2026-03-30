@@ -220,7 +220,7 @@ function VideoPlayer({ id }: { id: string }) {
       
       try {
         
-        const urlLink = `${url.origin}/${videoId}`
+        const urlLink = `${url.origin}/tutorials/${videoId}`
         const payload:shareData = {
           title:tutorialVideo?.title ?? "",
           text:tutorialVideo?.description ?? "",
