@@ -16,7 +16,12 @@ export const useShare =()=>{
             url:data.url
         }
         if(navigator.share){
-            await navigator.share(item)
+            try{
+                  await navigator.share(item)
+        }catch(err){
+                console.log("navigation share error",err?.name ?? "",err?.message as string)
+            }
+          
         }else{
             await navigator.clipboard.writeText(item.url)
             setCopied(true)
