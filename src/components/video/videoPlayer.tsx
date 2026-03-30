@@ -26,6 +26,7 @@ import { useGetSingleVideo, useGetVideos } from "@/service/query/vides.query";
 import { useMessaging } from "@/hooks/useMessaging";
 import { useUserStore } from "@/store/auth-store";
 import { shareData, useShare } from "@/hooks/useShare";
+import { useDownload } from "@/hooks/useDownload";
 function VideoPlayer({ id }: { id: string }) {
   const { socket, isConnected, sendMessage } = useMessaging();
 
@@ -43,6 +44,10 @@ function VideoPlayer({ id }: { id: string }) {
 
 
     const { share, copied } = useShare()
+    const {download} = useDownload({
+      url:tutorialVideo?.videoUrl || "",
+      fileName:tutorialVideo?.title || ""
+    })
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -188,6 +193,14 @@ function VideoPlayer({ id }: { id: string }) {
     video.currentTime = pct * duration;
     setCurrentTime(pct * duration);
   };
+  const handleDownload = ()=>{
+      try{
+        console.log('downloading')
+        download()
+      }catch{
+
+      }
+  }
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!videoRef.current) return;
@@ -505,7 +518,8 @@ if (!tutorialVideo) return <div>No video found</div>;
                   Share
                 </button>
 
-                <button className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl transition text-slate-700 flex-shrink-0 text-xs sm:text-sm font-medium">
+                <button className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl transition text-slate-700 flex-shrink-0 text-xs sm:text-sm font-medium"
+                onClick={()=>download()}>
                   <Download size={15} />
                   Save
                 </button>
