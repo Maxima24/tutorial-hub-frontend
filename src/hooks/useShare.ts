@@ -12,7 +12,7 @@ export const useShare =()=>{
     const share = async (data:shareData)=>{
         const item = {
             title: data.title,
-            text:data.text,
+            text:`${data.text} at ${data.url}`,
             url:data.url
         }
         if(navigator.share){
