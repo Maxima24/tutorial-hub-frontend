@@ -1,4 +1,4 @@
-"use clent"
+"use client"
 import VideoPlayer from "@/components/video/videoPlayer";
 import { useParams } from "next/navigation"
 
