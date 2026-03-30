@@ -18,8 +18,9 @@ export const useShare =()=>{
         if(navigator.share){
             try{
                   await navigator.share(item)
-        }catch(err){
-                console.log("navigation share error",err?.name ?? "",err?.message as string)
+        }catch(err ){
+            const error = err as Error
+                console.log("navigation share error",error.name ?? "",error?.message as string)
             }
           
         }else{
