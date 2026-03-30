@@ -11,6 +11,7 @@ export const useShare = () => {
   const sharingRef = useRef(false); // 👈 tracks if share is in progress
 
   const share = async (data: shareData) => {
+      if (typeof window === "undefined") return;
     if (sharingRef.current) return; // 👈 if already sharing, do nothing
 
     const item = {
