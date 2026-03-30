@@ -10,6 +10,21 @@ export interface Video {
   thumbnail: string;
   students: string;
 }
+export interface GetVideoResponse{
+          id: string,
+        title:string ,
+        videoUrl: string
+        description: string,
+        difficulty: string,
+        duration: number
+        courseId: string |null,
+        thumbnailUrl: string,
+        rating:string
+        videoPublicId: string,
+        price: number,
+        userId: string,
+       
+}
 export interface VideoStore{
     videos:Video[],
     addVideo:(video:Video)=>void,

@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../api";
+import { GetVideoResponse } from "@/interfaces/videoInterface";
 
 export const useGetVideos = () => {
   return useQuery({
@@ -21,7 +22,7 @@ export const useGetVideos = () => {
 export const useGetSingleVideo = (videoId:string)=>{
   return useQuery({
     queryKey:["video",videoId],
-    queryFn: async ()=>{
+    queryFn: async ():Promise<GetVideoResponse>=>{
       const {data} = await api.get(`/video/${videoId}`)
       return data.video
     },

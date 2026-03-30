@@ -25,21 +25,24 @@ import {
 import { useGetSingleVideo, useGetVideos } from "@/service/query/vides.query";
 import { useMessaging } from "@/hooks/useMessaging";
 import { useUserStore } from "@/store/auth-store";
-function VideoPlayer({id}:{id:string}) {
+import { shareData, useShare } from "@/hooks/useShare";
+function VideoPlayer({ id }: { id: string }) {
   const { socket, isConnected, sendMessage } = useMessaging();
+
   const router = useRouter();
   const videoId = id as string;
-  useEffect(()=>{
-    console.log("This is the video id",videoId)
-  },[videoId])
+  useEffect(() => {
+    console.log("This is the video id", videoId)
+  }, [videoId])
 
   const [isMoreOptionsOpen, setIsMoreOptionsOpen] = useState(false);
   const moreOptionsRef = useRef<HTMLDivElement>(null);
   const userId = useUserStore((state) => state.user?.id);
-  const { data: tutorialVideo, isLoading,isError } = useGetSingleVideo(videoId)
-  const {data:tutorialVideos} = useGetVideos()
+  const { data: tutorialVideo, isLoading, isError } = useGetSingleVideo(videoId)
+  const { data: tutorialVideos } = useGetVideos()
 
 
+    const { share, copied } = useShare()
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -71,16 +74,7 @@ function VideoPlayer({id}:{id:string}) {
     return () => document.removeEventListener("mousedown", handler);
   }, [isMoreOptionsOpen]);
 
-  // useEffect(() => {
-  //   if (tutorialVideos && videoId) {
-  //     const video = tutorialVideos?.find((v: any) => String(v.id) === String(videoId));
-  //     console.log(video)
-  //     if(!video){
-  //       console.error("The video not found",video)
-  //     }
-  //     setCurrentVideo(video);
-  //   }
-  // }, [tutorialVideos, videoId]);
+
 
   useEffect(() => {
     const video = videoRef.current;
@@ -90,6 +84,12 @@ function VideoPlayer({id}:{id:string}) {
     setWatchedPercentage(0);
     setIsPlaying(false);
 
+
+    /************************************************
+     * Functiion Calls
+     * ******************************************
+     */
+  
     const onLoadedMetadata = () => { if (!isNaN(video.duration)) setDuration(video.duration); };
     const onTimeUpdate = () => {
       if (!isSeekingRef.current) setCurrentTime(video.currentTime);
@@ -202,6 +202,29 @@ function VideoPlayer({id}:{id:string}) {
     videoRef.current.muted = !isMuted;
     setIsMuted(!isMuted);
   };
+    const handleShare = async() => {
+      const url = window.location
+      
+if(!tutorialVideo) return
+      try {
+        
+        const urlLink = `${url.origin}/${videoId}`
+        const payload:shareData = {
+          title:tutorialVideo.title,
+          text:tutorialVideo.description,
+          url:urlLink
+
+        }
+        await share(payload)
+      } catch (err) {
+        console.error("Could not share video",err)
+      }
+
+
+
+
+    }
+
 
   const changePlaybackRate = (rate: number) => {
     if (!videoRef.current) return;
@@ -226,7 +249,7 @@ function VideoPlayer({id}:{id:string}) {
     setIsMoreOptionsOpen(false);
     if (option.toLowerCase() === "message user") {
       if (!userId || !isConnected || userId === tutorialVideo?.userId) return;
-      await sendMessage({ isGroup: false, content: "Hi, I love your video content!", reciepientId: tutorialVideo?.userId });
+      await sendMessage({ isGroup: false, content: "Hi, I love your video content!", reciepientId: tutorialVideo?.userId! });
     }
   };
 
@@ -243,7 +266,7 @@ function VideoPlayer({id}:{id:string}) {
 
   const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
 
-  if (isLoading  ||  !tutorialVideo) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
         <div className="animate-spin h-10 w-10 border-[3px] border-blue-600 border-t-transparent rounded-full" />
@@ -270,6 +293,9 @@ function VideoPlayer({id}:{id:string}) {
       </div>
     );
   }
+  if (isLoading) return <div>Loading...</div>;
+if (isError) return <div>Error loading video</div>;
+if (!tutorialVideo) return <div>No video found</div>;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/20 to-slate-100">
@@ -406,11 +432,10 @@ function VideoPlayer({id}:{id:string}) {
                             <button
                               key={rate}
                               onClick={() => changePlaybackRate(rate)}
-                              className={`w-full text-left px-4 py-1.5 text-sm transition ${
-                                playbackRate === rate
+                              className={`w-full text-left px-4 py-1.5 text-sm transition ${playbackRate === rate
                                   ? "text-blue-400 bg-white/10 font-semibold"
                                   : "text-white/90 hover:bg-white/10"
-                              }`}
+                                }`}
                             >
                               {rate === 1 ? "Normal" : `${rate}×`}
                             </button>
@@ -460,9 +485,8 @@ function VideoPlayer({id}:{id:string}) {
                 <div className="flex items-center bg-slate-100 rounded-xl overflow-hidden flex-shrink-0">
                   <button
                     onClick={() => { setLiked(!liked); if (disliked) setDisliked(false); }}
-                    className={`flex items-center gap-1.5 px-3 py-2 transition text-xs sm:text-sm font-medium ${
-                      liked ? "bg-blue-600 text-white" : "hover:bg-slate-200 text-slate-700"
-                    }`}
+                    className={`flex items-center gap-1.5 px-3 py-2 transition text-xs sm:text-sm font-medium ${liked ? "bg-blue-600 text-white" : "hover:bg-slate-200 text-slate-700"
+                      }`}
                   >
                     <ThumbsUp size={15} />
                     <span>Like</span>
@@ -476,7 +500,7 @@ function VideoPlayer({id}:{id:string}) {
                   </button>
                 </div>
 
-                <button className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl transition text-slate-700 flex-shrink-0 text-xs sm:text-sm font-medium">
+                <button className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl transition text-slate-700 flex-shrink-0 text-xs sm:text-sm font-medium" onClick={handleShare}>
                   <Share2 size={15} />
                   Share
                 </button>
@@ -490,9 +514,8 @@ function VideoPlayer({id}:{id:string}) {
                 <div className="relative flex-shrink-0" ref={moreOptionsRef}>
                   <button
                     onClick={() => setIsMoreOptionsOpen(!isMoreOptionsOpen)}
-                    className={`p-2 rounded-xl transition text-slate-700 ${
-                      isMoreOptionsOpen ? "bg-slate-200" : "bg-slate-100 hover:bg-slate-200"
-                    }`}
+                    className={`p-2 rounded-xl transition text-slate-700 ${isMoreOptionsOpen ? "bg-slate-200" : "bg-slate-100 hover:bg-slate-200"
+                      }`}
                   >
                     <MoreHorizontal size={17} />
                   </button>
