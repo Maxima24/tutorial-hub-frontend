@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useRef, useState } from "react"
 
 export interface shareData{
     title:string,
@@ -6,30 +6,38 @@ export interface shareData{
     url: string
 }
 
-export const useShare =()=>{
-    const [copied,setCopied] = useState<boolean>(false)
+export const useShare = () => {
+  const [copied, setCopied] = useState<boolean>(false);
+  const sharingRef = useRef(false); // 👈 tracks if share is in progress
 
-    const share = async (data:shareData)=>{
-        const item = {
-            title: data.title,
-            text:`${data.text} at ${data.url}`,
-            url:data.url
+  const share = async (data: shareData) => {
+      if (typeof window === "undefined") return;
+    if (sharingRef.current) return; // 👈 if already sharing, do nothing
+
+    const item = {
+      title: data.title,
+      text: `${data.text} at ${data.url}`,
+      url: data.url,
+    };
+
+    if (navigator.share) {
+      try {
+        sharingRef.current = true; // 👈 mark as sharing
+        await navigator.share(item);
+      } catch (err) {
+        const error = err as Error;
+        if (error.name !== "AbortError") {
+          console.error("share error:", error.name, error.message);
         }
-        console.log("This is the navigator.share",navigator.share)
-        if(navigator.share){
-            try{
-                  await navigator.share(item)
-        }catch(err ){
-            const error = err as Error
-                console.log("navigation share error",error.name ?? "",error?.message as string)
-            }
-          
-        }else{
-            await navigator.clipboard.writeText(item.url)
-            setCopied(true)
-            setTimeout(()=>setCopied(false),2000)
-        }
+      } finally {
+        sharingRef.current = false; // 👈 always reset when done
+      }
+    } else {
+      await navigator.clipboard.writeText(item.url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     }
+  };
 
-    return {copied,share}
-}
+  return { copied, share };
+};
