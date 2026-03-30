@@ -101,8 +101,6 @@ function VideoPlayer({id}:{id:string}) {
     const onWaiting = () => setIsBuffering(true);
     const onCanPlay = () => setIsBuffering(false);
     const onEnded = () => setIsPlaying(false);
-
-    video.load();
     video.addEventListener("loadedmetadata", onLoadedMetadata);
     video.addEventListener("timeupdate", onTimeUpdate);
     video.addEventListener("waiting", onWaiting);
