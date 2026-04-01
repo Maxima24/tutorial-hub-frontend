@@ -19,25 +19,45 @@ import {
 import { useMiniSidebar } from "@/contexts/miniSideBarContext";
 import { useUserStore } from "@/store/auth-store";
 import { useRouter } from "next/navigation";
+import useVideosStore from "@/store/videos-store";
+import { get } from "node_modules/axios/index.cjs";
+import { Video, VideoData } from "@/interfaces/videoInterface";
+import
+Image
+  from "next/image"
 
 /* ─── Types ─── */
 type Course = {
-  title: string;
-  progress: number;
-  duration: string;
-  instructor: string;
-};
-
-type Tutorial = {
-  id: number;
+  id: string;
   title: string;
   category: string;
-  level: "beginner" | "intermediate" | "advanced";
   duration: string;
-  students: number;
+  difficulty: string;
+  rating: number;
+  thumbnail: string;
+  students: string;
+  level?: string
+  percentageWatched: number;
+  totalDuration: number;
+  progress: number;
+  instructor?: string
+  completed: boolean;
+  lastWatchedAt?: string | undefined;
+}
+
+  ;
+
+type Tutorial = {
+  id: string;
+  title: string;
+  category: string;
+  level?: "beginner" | "intermediate" | "advanced";
+  duration: string;
+  students: string;
   rating: number | null;
-  thumbnail: string; // gradient fallback
-  instructor: string;
+  thumbnail: string;
+  thumbnailUrl?: string // gradient fallback
+  instructor?: string;
   isNew?: boolean;
   isTrending?: boolean;
 };
@@ -78,82 +98,51 @@ const stats = [
   // },
 ];
 
-const recentCourses: Course[] = [
-  {
-    title: "Advanced React Patterns",
-    progress: 65,
-    duration: "2h 30m",
-    instructor: "Sarah Johnson",
-  },
-  {
-    title: "Python for Data Science",
-    progress: 80,
-    duration: "1h 45m",
-    instructor: "Emma Davis",
-  },
-  {
-    title: "UI/UX Design Mastery",
-    progress: 40,
-    duration: "3h 15m",
-    instructor: "Mike Chen",
-  },
-  {
-    title: "Node.js Advanced",
-    progress: 55,
-    duration: "2h 10m",
-    instructor: "James Lee",
-  },
-  {
-    title: "TypeScript Deep Dive",
-    progress: 90,
-    duration: "1h 20m",
-    instructor: "Priya Sharma",
-  },
-];
+
 
 const featuredTutorials: Tutorial[] = [
   {
-    id: 1,
+    id: "1",
     title: "EEE 301: Microelectronics & PMOS Electrostatics",
     category: "ENGINEERING",
     level: "intermediate",
     duration: "4:34",
-    students: 0,
+    students: "0",
     rating: null,
     thumbnail: "from-blue-400 to-indigo-600",
     instructor: "John Doe",
     isTrending: true,
   },
   {
-    id: 2,
+    id: "2",
     title: "MTH 101 – PHY 101 (3rd Edition)",
     category: "GENERAL",
     level: "beginner",
     duration: "0:04",
-    students: 0,
+    students: "0",
     rating: null,
     thumbnail: "from-teal-400 to-cyan-600",
     instructor: "John Doe",
     isNew: true,
   },
   {
-    id: 3,
+    id: "3",
     title: "Third Iteration – Full Walkthrough",
     category: "GENERAL",
     level: "beginner",
     duration: "0:21",
-    students: 0,
+    students: "0",
     rating: null,
     thumbnail: "from-slate-600 to-gray-800",
     instructor: "John Doe",
   },
   {
-    id: 4,
+    id: "4",
     title: "The First Tutorial",
     category: "GENERAL",
     level: "intermediate",
     duration: "0:04",
-    students: 0,
+    students: '0',
     rating: null,
     thumbnail: "from-teal-500 to-blue-600",
     instructor: "John Doe",
@@ -167,7 +156,21 @@ const LearningPlatform = () => {
   const router = useRouter();
   const [isMounted, setIsMounted] = useState<boolean>(false);
   const user = useUserStore((state) => state.user);
+  const videos = useVideosStore((state) => state.videos)
+  const recentVideos = useVideosStore((state) => state.recentVideos)
+  console.log(recentVideos)
+  const continueVideos = Object.entries(recentVideos).filter(([_, data]) => !data.completed).map(
+    ([videoId, data]) => {
+      const video = videos.find((video) => String(video.id) === videoId)
+      if (!video) return null
+      return {
+        ...video,
+        ...data
+      }
+
+    }).filter((item): item is Video & VideoData => item !== null)
   const { isCollapsedDesktop } = useMiniSidebar();
+
 
   useEffect(() => {
     setIsMounted(true);
@@ -276,7 +279,7 @@ const LearningPlatform = () => {
         </div>
 
         {/* ── Main 2-column grid ── */}
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-5 sm:gap-6 mb-6 sm:mb-8">
+        <div className=" hidden md:grid grid-cols-1 xl:grid-cols-3 gap-5 sm:gap-6 mb-6 sm:mb-8">
 
           {/* Continue Learning (takes 2/3) */}
           <div className="xl:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100">
@@ -295,15 +298,19 @@ const LearningPlatform = () => {
 
             {/* Desktop horizontal scroll */}
             <div className="hidden sm:flex overflow-x-auto scrollbar-hide gap-4 pb-6 px-5 sm:px-6">
-              {recentCourses.map((course, idx) => (
-                <CourseCard key={idx} course={course} />
+             
+              {continueVideos.map((course, idx) => (
+                 <div key={course.id} className="shrink-0 w-64" onClick={()=>router.push(`/tutorials/${course.id}`)}>
+                         <TutorialCard  tutorial={course} />
+              </div>
+           
               ))}
             </div>
 
             {/* Mobile vertical */}
             <div className="flex flex-col gap-3 sm:hidden pb-5 px-4">
-              {recentCourses.map((course, idx) => (
-                <CourseCardMobile key={idx} course={course} />
+              {continueVideos.map((course, idx) => (
+                <TutorialCard key={idx} tutorial={course} />
               ))}
             </div>
           </div>
@@ -395,7 +402,7 @@ const LearningPlatform = () => {
         {/* <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-6 mt-5 sm:mt-6">
 
           {/* Recent Achievements */}
-          {/* <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-6">
+        {/* <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold text-gray-900">Achievements</h2>
               <Award size={18} className="text-yellow-500" />
@@ -421,8 +428,8 @@ const LearningPlatform = () => {
             </div>
           </div> */}
 
-          {/* Quick Actions */}
-          {/* <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-6">
+        {/* Quick Actions */}
+        {/* <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-6">
             <h2 className="text-lg font-bold text-gray-900 mb-4">Quick Actions</h2>
             <div className="grid grid-cols-2 gap-3">
               {[
@@ -468,31 +475,49 @@ const TutorialCard = ({ tutorial }: { tutorial: Tutorial }) => {
   return (
     <div className="group rounded-xl overflow-hidden border border-gray-100 hover:border-blue-100 hover:shadow-md transition-all duration-300 cursor-pointer bg-white">
       {/* Thumbnail */}
-      <div className={`relative bg-gradient-to-br ${tutorial.thumbnail} aspect-video flex items-center justify-center overflow-hidden`}>
+
+
+
+      <div className={`relative h-40 overflow-hidden ${!tutorial.thumbnailUrl ? `bg-gradient-to-br ${tutorial.thumbnail}` : ""}`}>
         {/* Play button */}
-        <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300 border border-white/30">
-          <Play size={20} className="text-white ml-0.5" />
+        {tutorial.thumbnailUrl ? (
+          <Image
+            src={tutorial.thumbnailUrl}
+            alt={tutorial.title}
+            fill
+            className="object-cover z-0"
+            sizes="(max-width: 720px) 100vw, (max-width: 1024px) 50vw, 25vw"
+          />
+        ) : (
+          ""
+        )}
+
+
+        <div className="absolute inset-0 z-10 flex items-center justify-center">
+          <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300 border border-white/30">
+            <Play size={20} className="text-white ml-0.5" />
+          </div>
         </div>
 
         {/* Badges */}
-        <div className="absolute top-2 left-2 flex gap-1.5">
-          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${levelColors[tutorial.level]} capitalize`}>
+        {/* <div className="absolute top-2 left-2 flex gap-1.5">
+          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${levelColors?.[tutorial.level]} capitalize`}>
             {tutorial.level}
           </span>
-        </div>
+        </div> */}
         {tutorial.isNew && (
-          <div className="absolute top-2 right-2 bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+          <div className="absolute top-2 right-2 bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full z-10">
             NEW
           </div>
         )}
         {tutorial.isTrending && (
-          <div className="absolute top-2 right-2 bg-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-0.5">
+          <div className="absolute top-2 right-2 bg-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-0.5 z-10">
             <TrendingUp size={8} /> HOT
           </div>
         )}
 
         {/* Duration overlay */}
-        <div className="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded flex items-center gap-1">
+        <div className="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded flex items-center gap-1 ">
           <Clock size={9} /> {tutorial.duration}
         </div>
       </div>
@@ -507,7 +532,7 @@ const TutorialCard = ({ tutorial }: { tutorial: Tutorial }) => {
         <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
           <div className="flex items-center gap-1.5">
             <div className="w-5 h-5 bg-gradient-to-br from-pink-400 to-rose-400 rounded-full flex items-center justify-center text-white text-[9px] font-bold flex-shrink-0">
-              {tutorial.instructor.split(" ").map((n) => n[0]).join("")}
+              {tutorial.instructor?.split(" ").map((n) => n[0]).join("")}
             </div>
             <span className="truncate">{tutorial.instructor}</span>
           </div>
@@ -532,74 +557,9 @@ const TutorialCard = ({ tutorial }: { tutorial: Tutorial }) => {
 };
 
 /* ─── Desktop Course Card ─── */
-const CourseCard = ({ course }: { course: Course }) => (
-  <div className="flex-shrink-0 w-64 snap-start flex flex-col rounded-xl border border-gray-100 hover:border-blue-100 hover:shadow-md transition-all duration-300 cursor-pointer overflow-hidden bg-white group">
-    <div className="relative bg-gradient-to-br from-blue-400 to-purple-600 p-5 pb-8">
-      <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-white/30 group-hover:scale-105 transition-transform">
-        <Play className="text-white" size={22} />
-      </div>
-    </div>
-    <CourseCardBody course={course} />
-  </div>
-);
+
 
 /* ─── Mobile Course Card ─── */
-const CourseCardMobile = ({ course }: { course: Course }) => (
-  <div className="flex items-center gap-3 bg-white border border-gray-100 rounded-xl p-3 shadow-sm active:bg-blue-50 transition-colors cursor-pointer">
-    <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-500 rounded-xl flex items-center justify-center shadow">
-      <Play className="text-white" size={18} />
-    </div>
-    <div className="flex-1 min-w-0">
-      <h3 className="font-semibold text-gray-900 text-sm truncate mb-0.5">{course.title}</h3>
-      <div className="flex items-center gap-1.5 mb-2">
-        <div className="w-5 h-5 bg-gradient-to-br from-pink-400 to-rose-400 rounded-full flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
-          {course.instructor.split(" ").map((n) => n[0]).join("")}
-        </div>
-        <span className="text-xs text-gray-500 truncate">{course.instructor}</span>
-        <span className="text-gray-300">·</span>
-        <span className="flex items-center gap-0.5 text-xs text-gray-400 whitespace-nowrap">
-          <Clock size={10} /> {course.duration}
-        </span>
-      </div>
-      <div className="flex items-center gap-2">
-        <div className="flex-1 bg-gray-200 rounded-full h-1.5 overflow-hidden">
-          <div className="bg-gradient-to-r from-blue-500 to-purple-500 h-full" style={{ width: `${course.progress}%` }} />
-        </div>
-        <span className="text-xs font-bold text-purple-600 whitespace-nowrap">{course.progress}%</span>
-      </div>
-    </div>
-  </div>
-);
 
-/* ─── Shared Course Card Body ─── */
-const CourseCardBody = ({ course }: { course: Course }) => (
-  <div className="flex-1 p-4">
-    <div className="flex items-start justify-between gap-2 mb-2">
-      <h3 className="font-bold text-gray-900 text-sm leading-snug">{course.title}</h3>
-      <div className="flex items-center gap-1 px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-[10px] font-semibold whitespace-nowrap flex-shrink-0">
-        <Clock size={9} /> {course.duration}
-      </div>
-    </div>
-
-    <div className="flex items-center gap-2 text-xs text-gray-500 mb-3">
-      <div className="w-5 h-5 bg-gradient-to-br from-pink-400 to-rose-400 rounded-full flex items-center justify-center text-white text-[9px] font-bold">
-        {course.instructor.split(" ").map((n) => n[0]).join("")}
-      </div>
-      <span className="truncate font-medium">{course.instructor}</span>
-    </div>
-
-    <div className="flex items-center gap-2">
-      <div className="flex-1 bg-gray-200 rounded-full h-1.5 overflow-hidden">
-        <div
-          className="bg-gradient-to-r from-blue-500 to-purple-500 h-full transition-all duration-700"
-          style={{ width: `${course.progress}%` }}
-        />
-      </div>
-      <div className="text-sm font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-        {course.progress}%
-      </div>
-    </div>
-  </div>
-);
 
 export default LearningPlatform;

@@ -20,6 +20,8 @@ function Page() {
   const { isCollapsedDesktop } = useMiniSidebar();
   const { videos, searchQuery, setSearchQuery, filteredVideos } = useVideosStore();
   const { data: tutorialVideos, isLoading } = useGetVideos();
+  const setVideos = useVideosStore((state)=>state.setVideos)
+  
   const displayedVideos = searchQuery ? filteredVideos : videos;
 
   useEffect(() => {

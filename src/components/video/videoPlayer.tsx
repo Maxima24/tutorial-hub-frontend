@@ -27,6 +27,7 @@ import { useMessaging } from "@/hooks/useMessaging";
 import { useUserStore } from "@/store/auth-store";
 import { shareData, useShare } from "@/hooks/useShare";
 import { useDownload } from "@/hooks/useDownload";
+import useVideosStore from "@/store/videos-store";
 function VideoPlayer({ id }: { id: string }) {
   const { socket, isConnected, sendMessage } = useMessaging();
 
@@ -40,14 +41,15 @@ function VideoPlayer({ id }: { id: string }) {
   const moreOptionsRef = useRef<HTMLDivElement>(null);
   const userId = useUserStore((state) => state.user?.id);
   const { data: tutorialVideo, isLoading, isError } = useGetSingleVideo(videoId)
-  const { data: tutorialVideos } = useGetVideos()
+ const tutorialVideos = useVideosStore((state)=>state.videos)
 
 
-    const { share, copied } = useShare()
-    const {download} = useDownload({
-      url:tutorialVideo?.videoUrl || "",
-      fileName:tutorialVideo?.title || ""
-    })
+  const { share, copied } = useShare()
+  const { download } = useDownload({
+    url: tutorialVideo?.videoUrl || "",
+    fileName: tutorialVideo?.title || ""
+  })
+  const { updateVideoWatchHistory } = useVideosStore()
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -61,10 +63,12 @@ function VideoPlayer({ id }: { id: string }) {
   const [watchedPercentage, setWatchedPercentage] = useState(0);
   const [liked, setLiked] = useState(false);
   const [disliked, setDisliked] = useState(false);
-
+  // useRefs() Hooks
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const settingsRef = useRef<HTMLDivElement>(null);
+  const progressRef = useRef<number>(0)
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isSeekingRef = useRef(false);
   const isScrubbingRef = useRef(false);
   const controlsTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -94,7 +98,7 @@ function VideoPlayer({ id }: { id: string }) {
      * Functiion Calls
      * ******************************************
      */
-  
+
     const onLoadedMetadata = () => { if (!isNaN(video.duration)) setDuration(video.duration); };
     const onTimeUpdate = () => {
       if (!isSeekingRef.current) setCurrentTime(video.currentTime);
@@ -119,6 +123,18 @@ function VideoPlayer({ id }: { id: string }) {
       video.removeEventListener("ended", onEnded);
     };
   }, [tutorialVideo?.videoUrl]);
+
+  useEffect(() => {
+  const video = videoRef.current
+
+  if (!video) return
+
+  const playPromise = video.play()
+
+  if (playPromise !== undefined) {
+    playPromise.catch(() => {})
+  }
+}, [])
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -193,14 +209,7 @@ function VideoPlayer({ id }: { id: string }) {
     video.currentTime = pct * duration;
     setCurrentTime(pct * duration);
   };
-  const handleDownload = ()=>{
-      try{
-        console.log('downloading')
-        download()
-      }catch{
 
-      }
-  }
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!videoRef.current) return;
@@ -215,23 +224,23 @@ function VideoPlayer({ id }: { id: string }) {
     videoRef.current.muted = !isMuted;
     setIsMuted(!isMuted);
   };
-    const handleShare = async() => {
-      const url = window.location
-      
-      try {
-        
-        const urlLink = `${url.origin}/tutorials/${videoId}`
-        const payload:shareData = {
-          title:tutorialVideo?.title ?? "",
-          text:tutorialVideo?.description ?? "",
-          url:urlLink
+  const handleShare = async () => {
+    const url = window.location
 
-        }
-        await share(payload)
-      } catch (err) {
-        console.error("Could not share video",err)
+    try {
+
+      const urlLink = `${url.origin}/tutorials/${videoId}`
+      const payload: shareData = {
+        title: tutorialVideo?.title ?? "",
+        text: tutorialVideo?.description ?? "",
+        url: urlLink
+
       }
+      await share(payload)
+    } catch (err) {
+      console.error("Could not share video", err)
     }
+  }
 
 
   const changePlaybackRate = (rate: number) => {
@@ -272,6 +281,25 @@ function VideoPlayer({ id }: { id: string }) {
       : `${m}:${s.toString().padStart(2, "0")}`;
   };
 
+  const handleTimeUpdate = (e: React.SyntheticEvent<HTMLVideoElement>) => {
+    const video = e.currentTarget
+    progressRef.current = video.currentTime
+
+    if (saveTimerRef.current !== null) clearTimeout(saveTimerRef.current)
+    if (!video || isNaN(video.duration)) return
+
+    const duration = Math.floor(video.duration)
+    const currentTime = Math.floor(progressRef.current)
+
+    saveTimerRef.current = setTimeout(() => {
+      updateVideoWatchHistory(videoId, {
+       progress: currentTime,
+        percentageWatched: Math.floor((currentTime / duration) * 100),
+        totalDuration: duration,
+        completed: currentTime / duration >= 0.95,
+      })
+    }, 5000)
+  }
   const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   if (isLoading) {
@@ -302,8 +330,8 @@ function VideoPlayer({ id }: { id: string }) {
     );
   }
   if (isLoading) return <div>Loading...</div>;
-if (isError) return <div>Error loading video</div>;
-if (!tutorialVideo) return <div>No video found</div>;
+  if (isError) return <div>Error loading video</div>;
+  if (!tutorialVideo) return <div>No video found</div>;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/20 to-slate-100">
@@ -345,6 +373,32 @@ if (!tutorialVideo) return <div>No video found</div>;
               <video
                 ref={videoRef}
                 src={tutorialVideo.videoUrl}
+                onTimeUpdate={handleTimeUpdate}
+                onPause={() => {
+                  const video = videoRef.current
+                  if (saveTimerRef.current !== null) clearTimeout(saveTimerRef.current)
+                  if (!video || isNaN(video.duration)) return
+
+                  const duration = Math.floor(video.duration)
+                  const currentTime = Math.floor(progressRef.current)
+
+                  saveTimerRef.current = setTimeout(() => {
+                    updateVideoWatchHistory(videoId, {
+                      progress: currentTime,
+                      percentageWatched: Math.floor((currentTime / duration) * 100),
+                      totalDuration: duration,
+                      completed: currentTime / duration >= 0.95,
+                    })
+                  }, 5000)
+                }}
+                onEnded={() => {
+                  updateVideoWatchHistory(videoId, {
+                    progress: Math.floor(videoRef.current?.duration ?? 0),
+                    percentageWatched: 100,
+                    totalDuration: Math.floor(videoRef.current?.duration ?? 0),
+                    completed: true,
+                  })
+                }}
                 preload="metadata"
                 crossOrigin="anonymous"
                 poster={typeof tutorialVideo.thumbnailUrl === "string" ? tutorialVideo.thumbnailUrl : undefined}
@@ -441,8 +495,8 @@ if (!tutorialVideo) return <div>No video found</div>;
                               key={rate}
                               onClick={() => changePlaybackRate(rate)}
                               className={`w-full text-left px-4 py-1.5 text-sm transition ${playbackRate === rate
-                                  ? "text-blue-400 bg-white/10 font-semibold"
-                                  : "text-white/90 hover:bg-white/10"
+                                ? "text-blue-400 bg-white/10 font-semibold"
+                                : "text-white/90 hover:bg-white/10"
                                 }`}
                             >
                               {rate === 1 ? "Normal" : `${rate}×`}
@@ -509,13 +563,13 @@ if (!tutorialVideo) return <div>No video found</div>;
                 </div>
 
                 <button className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl transition text-slate-700 flex-shrink-0 text-xs sm:text-sm font-medium" onClick={handleShare}
-                disabled={!tutorialVideo || !videoId }>
+                  disabled={!tutorialVideo || !videoId}>
                   <Share2 size={15} />
                   Share
                 </button>
 
                 <button className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl transition text-slate-700 flex-shrink-0 text-xs sm:text-sm font-medium"
-                onClick={()=>download()}>
+                  onClick={() => download()}>
                   <Download size={15} />
                   Save
                 </button>
